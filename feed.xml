@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.5.1">Jekyll</generator><link href="https://cboudereau.github.io//feed.xml" rel="self" type="application/atom+xml" /><link href="https://cboudereau.github.io//" rel="alternate" type="text/html" /><updated>2017-08-09T18:09:45+02:00</updated><id>https://cboudereau.github.io//</id><title type="html">Yet Another Geek Blog</title><subtitle>Yet Another Geek Blog : dev with fun(ction)
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.5.1">Jekyll</generator><link href="https://cboudereau.github.io//feed.xml" rel="self" type="application/atom+xml" /><link href="https://cboudereau.github.io//" rel="alternate" type="text/html" /><updated>2017-08-09T18:18:13+02:00</updated><id>https://cboudereau.github.io//</id><title type="html">Yet Another Geek Blog</title><subtitle>Yet Another Geek Blog : dev with fun(ction)
 </subtitle><entry><title type="html">Parser Combinator in real life</title><link href="https://cboudereau.github.io//fsharp,/parser/combinator/2017/08/09/why-parser.html" rel="alternate" type="text/html" title="Parser Combinator in real life" /><published>2017-08-09T13:14:01+02:00</published><updated>2017-08-09T13:14:01+02:00</updated><id>https://cboudereau.github.io//fsharp,/parser/combinator/2017/08/09/why-parser</id><content type="html" xml:base="https://cboudereau.github.io//fsharp,/parser/combinator/2017/08/09/why-parser.html">&lt;p&gt;I had to write an application that handle 2200 msg per second. 
 This application consist of indexing and compress data with 7z.&lt;/p&gt;
 
@@ -422,4 +422,10 @@ convertFromString &quot;&quot;&quot;
   &lt;li&gt;For now, in my experience, I delivered multiple fix / multiple parsers composition and it is not a big deal to change my habits, finally it was easy to fix and maintain.&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;In a later post I will introduce &lt;a href=&quot;http://www.quanttec.com/fparsec/&quot;&gt;FParsec&lt;/a&gt; in order to parse proto3 file.&lt;/p&gt;</content><author><name></name></author><summary type="html">I had to write an application that handle 2200 msg per second. This application consist of indexing and compress data with 7z.</summary></entry></feed>
+&lt;p&gt;In a later post I will introduce &lt;a href=&quot;http://www.quanttec.com/fparsec/&quot;&gt;FParsec&lt;/a&gt; in order to parse proto3 file.&lt;/p&gt;
+
+&lt;h2 id=&quot;links&quot;&gt;Links&lt;/h2&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://fsharpforfunandprofit.com/posts/understanding-parser-combinators/&quot;&gt;Understanding Parser Combinators/Scott Wlaschin&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://wiki.haskell.org/Monad&quot;&gt;Monad/Haskell wiki&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</content><author><name></name></author><summary type="html">I had to write an application that handle 2200 msg per second. This application consist of indexing and compress data with 7z.</summary></entry></feed>

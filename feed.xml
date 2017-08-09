@@ -1,0 +1,425 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.5.1">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2017-08-09T17:46:32+02:00</updated><id>http://localhost:4000/</id><title type="html">Yet Another Geek Blog</title><subtitle>Yet Another Geek Blog : dev with fun(ction)
+</subtitle><entry><title type="html">Parser Combinator in real life</title><link href="http://localhost:4000/fsharp,/parser/combinator/2017/08/09/why-parser.html" rel="alternate" type="text/html" title="Parser Combinator in real life" /><published>2017-08-09T13:14:01+02:00</published><updated>2017-08-09T13:14:01+02:00</updated><id>http://localhost:4000/fsharp,/parser/combinator/2017/08/09/why-parser</id><content type="html" xml:base="http://localhost:4000/fsharp,/parser/combinator/2017/08/09/why-parser.html">&lt;p&gt;I had to write an application that handle 2200 msg per second. 
+This application consist of indexing and compress data with 7z.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;I will write another post for the usage of the awesome &lt;a href=&quot;https://github.com/zeromq/fszmq&quot;&gt;fszmq&lt;/a&gt; and a custom interop of 7z in a later post.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;disclaimer&quot;&gt;Disclaimer&lt;/h2&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;I attempted to use Linq to xml that load entirely the document element by element in memory causing the use of LOH a big element is loaded.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;The XmlProvider is based on Linq so I had used this simple implementation.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Both are very usefull and the usage of parser combinator is overkill when there is no good reason :)&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;the-problem&quot;&gt;The Problem&lt;/h2&gt;
+&lt;p&gt;All my documents consist of xml document containing some important information to store and organise for indexation process and other data to just forward.&lt;/p&gt;
+
+&lt;p&gt;2 Elements of the xml contains log data with partners request/response data. 
+Those 2 elements could have more than 10MB and I don’t want to load this kind of message entirely due to LOH + GC problems (avg is near 1200msg/s :)).&lt;/p&gt;
+
+&lt;p&gt;When I check the linq 2 xml implementation, it load the document entirely element by element in memory with the XmlReader.&lt;/p&gt;
+
+&lt;p&gt;So, I first wrote a simple code that use the XmlReader but :&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;I don’t know when this XmlReader read or not the data.&lt;/li&gt;
+  &lt;li&gt;It is hard to have a clean context&lt;/li&gt;
+  &lt;li&gt;But it works!&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;After 2 weeks in production, I discover a corner case like this :&lt;/p&gt;
+
+&lt;p&gt;A Id could be represent as&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&amp;lt;root&amp;gt;
+&amp;lt;Id&amp;gt;1&amp;lt;/Id&amp;gt;
+&amp;lt;Request&amp;gt;Big Data here !&amp;lt;/Request&amp;gt;
+&amp;lt;Response&amp;gt;Big Data here !&amp;lt;/Response&amp;gt;
+&amp;lt;/root&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&amp;lt;root&amp;gt;
+&amp;lt;Id&amp;gt;0&amp;lt;/Id&amp;gt;
+&amp;lt;items&amp;gt;&amp;lt;item&amp;gt;&amp;lt;Id&amp;gt;1&amp;lt;/Id&amp;gt;&amp;lt;Request&amp;gt;Big Data here !&amp;lt;/Request&amp;gt;&amp;lt;Response&amp;gt;Big Data here !&amp;lt;/Response&amp;gt;&amp;lt;/item&amp;gt;&amp;lt;/items&amp;gt;
+&amp;lt;/root&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;I remember how Linq and FSharp.Data were very usefull in this case but for the performance reason it is not ok!&lt;/p&gt;
+
+&lt;p&gt;After dealing with if/else/pattern matching approach, I tried Parser Combinator style.
+Instead parsing char, the context was just simply the XmlReader.
+I don’t want to rewrite a full xml parser because parsing xml is hard and XmlReader is ok for that point.&lt;/p&gt;
+
+&lt;h2 id=&quot;a-solution-in-functional-style&quot;&gt;A Solution in Functional style&lt;/h2&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;I have to index a lots of document so compose a parser should be easy
+The solution should offer a maximum of flexibility to compose things together&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;I would like to express code like&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;type Entry = { Id:string } 
+let convert message = 
+	use reader = XmlReader.Create(message:Stream)
+	let entry id = { Id=id }
+	let entryP = ffwd &quot;Id&quot; &amp;gt;&amp;gt;. element (id &amp;gt;&amp;gt; Ok) &quot;Id&quot;
+	run reader entryP
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;The Parser type that wrap the parser function.
+The aim of parser function is like an interface but instead it hide the context and error types&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;type Parser&amp;lt;'x, 'a&amp;gt; = Parser of ('x -&amp;gt; Result&amp;lt;'a, string list&amp;gt;) 
+let run context (Parser p) = p context
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Where ‘x could be the XmlReader and the run function that just unwrap the parser function and apply the given context.&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;gt;&amp;gt;.&lt;/code&gt; is an operator that takes 2 parser and return the result of the right parser. 
+If you understand the meaning of the point you should intuitively understand that the &lt;code class=&quot;highlighter-rouge&quot;&gt;.&amp;gt;&amp;gt;&lt;/code&gt; do the same except that it return the left result
+&lt;code class=&quot;highlighter-rouge&quot;&gt;.&amp;gt;&amp;gt;.&lt;/code&gt; return both left and right result.&lt;/p&gt;
+
+&lt;p&gt;Quite Simple !&lt;/p&gt;
+
+&lt;p&gt;the full parser code based on XmlReader&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;type Parser&amp;lt;'x, 'a&amp;gt; = Parser of ('x -&amp;gt; Result&amp;lt;'a, string list&amp;gt;) 
+
+//The code is based on the latest fsharp 4.1 (install vs2017 + fsharp 4.1 for eg)
+open Result
+
+let run context (Parser p) = p context
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Define a map function that&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Execute the parser x&lt;/li&gt;
+  &lt;li&gt;If is ok, the parser x return a x’ result. Just apply x’ to f and return Ok&lt;/li&gt;
+  &lt;li&gt;Stop if there is an error and do not apply f (show the error string list for exemple)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let map f x = 
+    fun reader -&amp;gt;
+        match run reader x with
+        | Ok x' -&amp;gt; f x' |&amp;gt; Ok
+        | Error e -&amp;gt; Error e
+    |&amp;gt; Parser
+
+let (&amp;lt;!&amp;gt;) = map
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Define an apply function that do&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Execute the run on the reader context on f and x&lt;/li&gt;
+  &lt;li&gt;if parsers f and x in sequence return both ok then return Ok f’ x’&lt;/li&gt;
+  &lt;li&gt;Like map stop on error&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let apply f x = 
+    fun reader -&amp;gt;
+        match run reader f, run reader x with
+        | Ok f', Ok x' -&amp;gt; Ok (f' x')
+        | Error e, _ | _, Error e -&amp;gt; Error e
+    |&amp;gt; Parser
+
+let (&amp;lt;*&amp;gt;) = apply
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;The famous so called “combinator” function that&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Parse x and y in sequence and return one or both depending on the “.” on operator&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;/// return y result if x and y are Ok in sequence
+let (&amp;gt;&amp;gt;.) x y = 
+    fun reader -&amp;gt;
+        match run reader x with
+        | Ok _ -&amp;gt; run reader y
+        | Error e -&amp;gt; Error e
+    |&amp;gt; Parser
+
+/// return x result if x and y are Ok in sequence
+let (.&amp;gt;&amp;gt;) x y = 
+    fun reader -&amp;gt;
+        match run reader x with
+        | Ok x' -&amp;gt; 
+            match run reader y with
+            | Ok _ -&amp;gt; Ok x'
+            | Error e -&amp;gt; Error e
+        | Error e -&amp;gt; Error e
+    |&amp;gt; Parser
+
+/// return (x, y) as struct results if x and y are Ok in sequence
+let (.&amp;gt;&amp;gt;.) x y = 
+    fun reader -&amp;gt;
+        match run reader x with
+        | Ok x' -&amp;gt; 
+            match run reader y with
+            | Ok y' -&amp;gt; Ok (struct(x', y'))
+            | Error e -&amp;gt; Error e
+        | Error e -&amp;gt; Error e
+    |&amp;gt; Parser
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;The many function aim is like an unfold on List, 
+so while there is no error aggregate result to a list and return the list on the first error&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let many x = 
+    fun reader -&amp;gt;
+        List.unfold 
+            &amp;lt;| fun reader -&amp;gt; match run reader x with Ok x' -&amp;gt; Some (x', reader) | Error _ -&amp;gt; None
+            &amp;lt;| reader
+        |&amp;gt; Ok
+
+   |&amp;gt; Parser
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;The orElse combinator is like a branch condition, if x has an error then run y.
+But if x it is ok, just return x without running y&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let orElse x y = 
+    fun reader -&amp;gt;
+        match run reader x with
+        | Ok x' -&amp;gt; Ok x'
+        | Error e1 -&amp;gt; 
+            match run reader y with
+            | Ok y' -&amp;gt; Ok y'
+            | Error e2 -&amp;gt; Error (List.append e1 e2)
+    |&amp;gt; Parser
+
+let (&amp;lt;|&amp;gt;) = orElse
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Ok now I have the abstraction to parse any context.&lt;/p&gt;
+
+&lt;p&gt;Remember that my context is the XmlReader&lt;/p&gt;
+
+&lt;p&gt;The Xml helper function&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;open System.Xml
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Hey it is xml :)&lt;/p&gt;
+
+&lt;p&gt;I Have to deal with XmlReader that confuse technical error with business error with the same way…
+So lets go to catch!&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let tryF name f (reader:XmlReader) = 
+    try
+        f reader
+    with ex -&amp;gt; Error [sprintf &quot;expected %s got an error:\r\n%O&quot; name ex]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;The ffwd just fast forward the XmlReader to the given name&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let ffwd name = 
+    fun (reader:XmlReader) -&amp;gt; 
+        while reader.Name &amp;lt;&amp;gt; name &amp;amp;&amp;amp; not reader.EOF &amp;amp;&amp;amp; reader.Read() do ()
+        |&amp;gt; Ok
+    |&amp;gt; Parser
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;The element function read the element with the given name, and apply the function f to the content&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let element f name = 
+    tryF name &amp;lt;| fun reader -&amp;gt;
+        reader.ReadStartElement(name)
+        if reader.NodeType = XmlNodeType.Text then
+            let result = f (reader.ReadContentAsString())
+            reader.ReadEndElement()
+            result 
+        else 
+            let result = f &quot;&quot;
+            if reader.NodeType = XmlNodeType.EndElement then reader.ReadEndElement()
+            result
+    |&amp;gt; Parser
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;The nested function treat the nested element case like :&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&amp;lt;item&amp;gt;...&amp;lt;/item&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let nested name p = 
+    tryF name &amp;lt;| fun reader -&amp;gt;
+        reader.ReadStartElement(name)
+        let result = run reader p
+        reader.ReadEndElement()
+        result
+    |&amp;gt; Parser
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;The pIgnore skip an element and return unit (very usefull with .» pIgnore or pIgnore ».)&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let pIgnore = 
+    fun (reader:XmlReader) -&amp;gt; 
+        reader.ReadStartElement()
+        reader.Skip()
+        reader.ReadEndElement()
+        Ok ()
+    |&amp;gt; Parser 
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;some-examples&quot;&gt;Some Examples&lt;/h2&gt;
+&lt;p&gt;A sample parser implementation :&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;open System 
+open System.IO
+
+type Entry = 
+    { Keys: string Set
+      Date : DateTime 
+      Data: Stream }
+
+let convert (message:Stream) = 
+    let reader = XmlReader.Create(new StreamReader(message))
+    let elt f x = element (f &amp;gt;&amp;gt; Ok) x
+    let strE x = elt id x
+    let ffwdE x f = ffwd x &amp;gt;&amp;gt;. element (f &amp;gt;&amp;gt; Ok) x
+    let pIsSuccess = ffwdE &quot;MessageType&quot; ((&amp;lt;&amp;gt;) &quot;Failed&quot;)
+
+    let pHid = ffwdE &quot;HotelId&quot; int
+    let pGid = elt int &quot;GroupId&quot;
+    
+    let parseDate s = 
+        System.DateTime.Parse(s, Globalization.CultureInfo.InvariantCulture, Globalization.DateTimeStyles.AssumeUniversal).ToUniversalTime()
+
+    let pDate = elt parseDate &quot;Date&quot;
+    
+    let pStartDate = ffwdE &quot;Start&quot; parseDate
+    let pEndDate = elt parseDate &quot;End&quot;
+
+    let pRoomCode = strE &quot;RoomCode&quot;
+    let pRoomId = elt int &quot;RoomId&quot;
+    
+    let pRooms = 
+        let zero = 
+            fun _ -&amp;gt; Ok Set.empty
+            |&amp;gt; Parser
+
+        let nestedO name p = nested name p &amp;lt;|&amp;gt; zero  
+        let pItem = pRoomCode .&amp;gt;&amp;gt;. pRoomId
+        let pItems = set &amp;lt;!&amp;gt; (many (nested &quot;item&quot; pItem))
+        ffwd &quot;Rooms&quot; &amp;gt;&amp;gt;. nestedO &quot;Rooms&quot; pItems
+    
+    let pRoom = Set.singleton &amp;lt;!&amp;gt; (ffwd &quot;RoomCode&quot; &amp;gt;&amp;gt;. pRoomCode .&amp;gt;&amp;gt;. pRoomId)
+
+    let roomIdsP = 
+        let defaultTo x y = 
+            match y with _ when y |&amp;gt; Set.isEmpty -&amp;gt; x | _ -&amp;gt; y 
+
+        defaultTo &amp;lt;!&amp;gt; pRoom &amp;lt;*&amp;gt; pRooms
+
+    let logEntry (message:Stream) isSuccess hotelId groupId stamp startDate endDate rooms = 
+        let ssnd (struct (_,x)) = x
+        let roomIds = rooms |&amp;gt; Set.map ssnd
+        let key = sprintf &quot;%i/%i/%i&quot;
+        let keys = roomIds |&amp;gt; Set.map(key groupId hotelId)
+        { Keys = keys
+          Date = stamp
+          Data = 
+            message.Position &amp;lt;- 0L
+            message }
+    
+    let rawXml (message:Stream) = 
+        message.Position &amp;lt;- 0L
+        let sr = new StreamReader(message)
+        sr.ReadToEnd()
+
+    try
+        match run reader (logEntry message &amp;lt;!&amp;gt; pIsSuccess &amp;lt;*&amp;gt; pHid &amp;lt;*&amp;gt; pGid &amp;lt;*&amp;gt; pDate &amp;lt;*&amp;gt; pStartDate &amp;lt;*&amp;gt; pEndDate &amp;lt;*&amp;gt; roomIdsP) with
+        | Ok logEntry -&amp;gt; Some logEntry
+        | Error errors -&amp;gt; 
+            let error = System.String.Join(System.Environment.NewLine, errors |&amp;gt; Array.ofList)
+            printfn &quot;[WARN]%s\r\nXml :\r\n%s&quot; error (rawXml message)
+            None
+    with ex -&amp;gt; failwithf &quot;Parsing failed with error %O\r\nXml:\r\n%s&quot; ex (rawXml message)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;I love this kind of little and composable declaration.
+Parsing is now like a Lego game!&lt;/p&gt;
+
+&lt;p&gt;The associated tests :&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;///Porcelain and plumbing
+let convertFromString x = 
+    use s = new MemoryStream()
+    use sw = new StreamWriter(s)
+    sw.Write(x:string)
+    sw.Flush()
+    s.Position &amp;lt;- 0L
+    convert s
+
+convertFromString &quot;&quot;&quot;
+&amp;lt;Transport&amp;gt;&amp;lt;DestinationUri&amp;gt;dest&amp;lt;/DestinationUri&amp;gt;&amp;lt;SourceUri&amp;gt;source&amp;lt;/SourceUri&amp;gt;&amp;lt;ReplyUri /&amp;gt;&amp;lt;MessageType&amp;gt;Update&amp;lt;/MessageType&amp;gt;&amp;lt;Message&amp;gt;&amp;lt;HotelId&amp;gt;3116&amp;lt;/HotelId&amp;gt;&amp;lt;GroupId&amp;gt;9358&amp;lt;/GroupId&amp;gt;&amp;lt;Date&amp;gt;2017-02-20T16:19:12.4037606Z&amp;lt;/Date&amp;gt;&amp;lt;Request&amp;gt;Big Request&amp;lt;/Request&amp;gt;&amp;lt;Response&amp;gt;Big Response&amp;lt;/Response&amp;gt;&amp;lt;Start&amp;gt;2017-03-02&amp;lt;/Start&amp;gt;&amp;lt;End&amp;gt;2017-03-03&amp;lt;/End&amp;gt;
+    &amp;lt;RoomCode&amp;gt;26757&amp;lt;/RoomCode&amp;gt;
+    &amp;lt;RoomId&amp;gt;7066&amp;lt;/RoomId&amp;gt;
+    &amp;lt;Rooms /&amp;gt;&amp;lt;/Message&amp;gt;&amp;lt;/Transport&amp;gt;
+&quot;&quot;&quot;
+
+/// Do not consider the first Single RoomId if equal 0 and if there is no RoomIds
+convertFromString &quot;&quot;&quot;
+&amp;lt;Transport&amp;gt;&amp;lt;DestinationUri&amp;gt;dest&amp;lt;/DestinationUri&amp;gt;&amp;lt;SourceUri&amp;gt;source&amp;lt;/SourceUri&amp;gt;&amp;lt;ReplyUri /&amp;gt;&amp;lt;MessageType&amp;gt;Update&amp;lt;/MessageType&amp;gt;&amp;lt;Message&amp;gt;&amp;lt;HotelId&amp;gt;3116&amp;lt;/HotelId&amp;gt;&amp;lt;GroupId&amp;gt;9358&amp;lt;/GroupId&amp;gt;&amp;lt;Date&amp;gt;2017-02-20T16:19:12.4037606Z&amp;lt;/Date&amp;gt;&amp;lt;Request&amp;gt;Big Request&amp;lt;/Request&amp;gt;&amp;lt;Response&amp;gt;Big Response&amp;lt;/Response&amp;gt;&amp;lt;Start&amp;gt;2017-03-02&amp;lt;/Start&amp;gt;&amp;lt;End&amp;gt;2017-03-03&amp;lt;/End&amp;gt;
+    &amp;lt;RoomCode /&amp;gt;
+    &amp;lt;RoomId&amp;gt;0&amp;lt;/RoomId&amp;gt;
+    &amp;lt;Rooms&amp;gt;
+        &amp;lt;item&amp;gt;
+            &amp;lt;RoomCode&amp;gt;16239&amp;lt;/RoomCode&amp;gt;
+            &amp;lt;RoomId&amp;gt;3347&amp;lt;/RoomId&amp;gt;
+        &amp;lt;/item&amp;gt;
+        &amp;lt;item&amp;gt;
+            &amp;lt;RoomCode&amp;gt;16241&amp;lt;/RoomCode&amp;gt;
+            &amp;lt;RoomId&amp;gt;3346&amp;lt;/RoomId&amp;gt;
+        &amp;lt;/item&amp;gt;
+   &amp;lt;/Rooms&amp;gt;&amp;lt;/Message&amp;gt;&amp;lt;/Transport&amp;gt;
+&quot;&quot;&quot;
+
+/// Use the RoomId 0 = All Rooms when the is empty RoomIds
+convertFromString &quot;&quot;&quot;
+&amp;lt;Transport&amp;gt;&amp;lt;DestinationUri&amp;gt;dest&amp;lt;/DestinationUri&amp;gt;&amp;lt;SourceUri&amp;gt;source&amp;lt;/SourceUri&amp;gt;&amp;lt;ReplyUri /&amp;gt;&amp;lt;MessageType&amp;gt;Update&amp;lt;/MessageType&amp;gt;&amp;lt;Message&amp;gt;&amp;lt;HotelId&amp;gt;3116&amp;lt;/HotelId&amp;gt;&amp;lt;GroupId&amp;gt;9358&amp;lt;/GroupId&amp;gt;&amp;lt;Date&amp;gt;2017-02-20T16:19:12.4037606Z&amp;lt;/Date&amp;gt;&amp;lt;Request&amp;gt;Big Request&amp;lt;/Request&amp;gt;&amp;lt;Response&amp;gt;Big Response&amp;lt;/Response&amp;gt;&amp;lt;Start&amp;gt;2017-03-02&amp;lt;/Start&amp;gt;&amp;lt;End&amp;gt;2017-03-03&amp;lt;/End&amp;gt;
+    &amp;lt;RoomCode /&amp;gt;
+    &amp;lt;RoomId&amp;gt;0&amp;lt;/RoomId&amp;gt;
+    &amp;lt;/Message&amp;gt;&amp;lt;/Transport&amp;gt;
+&quot;&quot;&quot;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;the-pros&quot;&gt;The pros&lt;/h2&gt;
+&lt;ul&gt;
+  &lt;li&gt;Easy to write&lt;/li&gt;
+  &lt;li&gt;Easy to maintain&lt;/li&gt;
+  &lt;li&gt;Hey it is composition, I can reuse parser and compose them to create new one!&lt;/li&gt;
+  &lt;li&gt;It fix a real issue (I start writing a code that parse xml with XmlReader with hard issue to solve in existing code)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;the-cons&quot;&gt;The cons&lt;/h2&gt;
+&lt;ul&gt;
+  &lt;li&gt;It was my first attempt, so the first parser was harder to write but others were very easy to compose (The most part was to understand how works XmlReader and when the context has changed or not!)&lt;/li&gt;
+  &lt;li&gt;The use of operator and applicative separate the definition of the function from its execution. When you are debugging the run function you have to deal with a stack containing operator name (like GreaterGreaterEqual). Inlining the operator could help but it is more difficult to debug.&lt;/li&gt;
+  &lt;li&gt;For now, in my experience, I delivered multiple fix / multiple parsers composition and it is not a big deal to change my habits, finally it was easy to fix and maintain.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;In a later post I will introduce &lt;a href=&quot;http://www.quanttec.com/fparsec/&quot;&gt;FParsec&lt;/a&gt; in order to parse proto3 file.&lt;/p&gt;</content><author><name></name></author><summary type="html">I had to write an application that handle 2200 msg per second. This application consist of indexing and compress data with 7z.</summary></entry></feed>

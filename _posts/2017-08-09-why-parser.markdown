@@ -10,11 +10,11 @@ This application consist of indexing and compress data with 7z.
 > I will write another post for the usage of the awesome [fszmq](https://github.com/zeromq/fszmq) and a custom interop of 7z in a later post.
 
 ## Disclaimer
-> I attempted to use Linq to xml that load entirely the document element by element in memory causing the use of LOH a big element is loaded. 
+> I attempted to use Linq to xml that load entirely the document element by element in memory causing LOH (on data that I don't want to index) problem when a big element is loaded.
 
-> The XmlProvider is based on Linq so I had used this simple implementation.
+> The XmlProvider is based on Linq so I had the sample problem.
 
-> Both are very usefull and the usage of parser combinator is overkill when there is no good reason :)
+> Both are very usefull and the usage of parser combinator is overkill when there is no reason :)
 
 ## The Problem
 All my documents consist of xml document containing some important information to store and organise for indexation process and other data to just forward.
@@ -32,7 +32,7 @@ So, I first wrote a simple code that use the XmlReader but :
 
 After 2 weeks in production, I discover a corner case like this : 
 
-A Id could be represent as 
+An Id could be represent as 
 
 ```
 <root>

@@ -408,3 +408,7 @@ convertFromString """
 - For now, in my experience, I delivered multiple fix / multiple parsers composition and it is not a big deal to change my habits, finally it was easy to fix and maintain.
 
 In a later post I will introduce [FParsec](http://www.quanttec.com/fparsec/) in order to parse proto3 file.
+
+## Links
+- [Understanding Parser Combinators/Scott Wlaschin](https://fsharpforfunandprofit.com/posts/understanding-parser-combinators/)
+- [Monad/Haskell wiki](https://wiki.haskell.org/Monad)

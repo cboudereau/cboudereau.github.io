@@ -10,7 +10,7 @@
   <meta name="description" content="I had to write an application that handle 2200 msg per second. This application consist of indexing and compress data with 7z.">
 
   <link rel="stylesheet" href="/assets/main.css">
-  <link rel="canonical" href="http://localhost:4000/fsharp,/parser/combinator/2017/08/09/why-parser.html">
+  <link rel="canonical" href="https://cboudereau.github.io//fsharp,/parser/combinator/2017/08/09/why-parser.html">
   <link rel="alternate" type="application/rss+xml" title="Yet Another Geek Blog" href="/feed.xml">
   
   
@@ -89,15 +89,15 @@ This application consist of indexing and compress data with 7z.</p>
 
 <h2 id="disclaimer">Disclaimer</h2>
 <blockquote>
-  <p>I attempted to use Linq to xml that load entirely the document element by element in memory causing the use of LOH a big element is loaded.</p>
+  <p>I attempted to use Linq to xml that load entirely the document element by element in memory causing LOH (on data that I don’t want to index) problem when a big element is loaded.</p>
 </blockquote>
 
 <blockquote>
-  <p>The XmlProvider is based on Linq so I had used this simple implementation.</p>
+  <p>The XmlProvider is based on Linq so I had the sample problem.</p>
 </blockquote>
 
 <blockquote>
-  <p>Both are very usefull and the usage of parser combinator is overkill when there is no good reason :)</p>
+  <p>Both are very usefull and the usage of parser combinator is overkill when there is no reason :)</p>
 </blockquote>
 
 <h2 id="the-problem">The Problem</h2>
@@ -118,7 +118,7 @@ Those 2 elements could have more than 10MB and I don’t want to load this kind 
 
 <p>After 2 weeks in production, I discover a corner case like this :</p>
 
-<p>A Id could be represent as</p>
+<p>An Id could be represent as</p>
 
 <div class="highlighter-rouge"><pre class="highlight"><code>&lt;root&gt;
 &lt;Id&gt;1&lt;/Id&gt;

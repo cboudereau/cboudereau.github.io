@@ -21,7 +21,7 @@ I have passed my night classes for an engineering degree at CNAM (Conservatoire 
 My first experience was very hard theory (functional programming) + language difficulties at the same time and it was very hard to get the concept.
 
 At the same time, I discovered that fsharp is a port of oCaml on .net. 
-I was falling love fsharp with type providers features and since 2012 I work with fsharp most of my professional time.
+I was falling in love fsharp with type providers features and since 2012 I work with fsharp most of my professional time.
 
 I like to share experience with other dev thanks to meetup, kata, ... (and drink beer after :))
 

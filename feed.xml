@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.5.1">Jekyll</generator><link href="https://cboudereau.github.io//feed.xml" rel="self" type="application/atom+xml" /><link href="https://cboudereau.github.io//" rel="alternate" type="text/html" /><updated>2017-08-10T15:01:12+02:00</updated><id>https://cboudereau.github.io//</id><title type="html">Yet Another Geek Blog</title><subtitle>Yet Another Geek Blog : dev with fun(ction)
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.5.1">Jekyll</generator><link href="https://cboudereau.github.io//feed.xml" rel="self" type="application/atom+xml" /><link href="https://cboudereau.github.io//" rel="alternate" type="text/html" /><updated>2017-08-10T15:33:46+02:00</updated><id>https://cboudereau.github.io//</id><title type="html">Yet Another Geek Blog</title><subtitle>Yet Another Geek Blog : dev with fun(ction)
 </subtitle><entry><title type="html">How to parse a proto3 message with FParsec</title><link href="https://cboudereau.github.io//fsharp/parser/combinator/fparsec/proto3/2017/08/10/proto3-parser.html" rel="alternate" type="text/html" title="How to parse a proto3 message with FParsec" /><published>2017-08-10T13:13:00+02:00</published><updated>2017-08-10T13:13:00+02:00</updated><id>https://cboudereau.github.io//fsharp/parser/combinator/fparsec/proto3/2017/08/10/proto3-parser</id><content type="html" xml:base="https://cboudereau.github.io//fsharp/parser/combinator/fparsec/proto3/2017/08/10/proto3-parser.html">&lt;p&gt;I would like to try &lt;a href=&quot;http://www.quanttec.com/fparsec/&quot;&gt;FParsec&lt;/a&gt; fsharp parser to parse proto3 message.&lt;/p&gt;
 
 &lt;p&gt;I used this &lt;a href=&quot;http://www.quanttec.com/fparsec/&quot;&gt;FParsec&lt;/a&gt; &lt;a href=&quot;http://www.quanttec.com/fparsec/tutorial.html#parsing-json&quot;&gt;tutorial&lt;/a&gt; first in order to be more familiar with this library.&lt;/p&gt;
@@ -108,7 +108,7 @@ run pRequired fieldSample
 &lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 
-&lt;p&gt;The pRequired will parse the work (case insensitive) required and return the fieldSpec with the parameter Required.
+&lt;p&gt;The pRequired will parse the word (case insensitive) required and return the fieldSpec with the parameter Required.
 Let see the fieldSpec func : f parameter could be one of the choice defined into the type :&lt;/p&gt;
 
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;type Field = 
@@ -148,14 +148,7 @@ run pField &quot;optional string CalStarttime=1&quot; //Success: &amp;lt;fun:pOp
 &lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 
-&lt;table&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;td&gt;We can see that the orElse operator (&amp;lt;&lt;/td&gt;
-      &lt;td&gt;&amp;gt;) return the parser corresponding to the field rule (optional, required, repeated).&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
+&lt;p&gt;We can see that the orElse operator &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;|&amp;gt;&lt;/code&gt; return the parser corresponding to the field rule (optional, required, repeated).&lt;/p&gt;
 
 &lt;p&gt;Now we have a function that take only the type, name and id.&lt;/p&gt;
 
@@ -203,7 +196,7 @@ run ScalarType.parser &quot;double&quot; //ParserResult&amp;lt;string,unit&amp;g
 &lt;/ul&gt;
 
 &lt;p&gt;The pzero is really intesting because it will always return Error with empty error message. 
-Combined with te orElse combinator it is like if you just force the second parser to be executed because the first parser will always failed.
+Combined with the orElse combinator it is like if you just force the second parser to be executed because the first parser will always failed.
 This is exactly what we want when we would like to fold the sequence of parsers to one parser.&lt;/p&gt;
 
 &lt;p&gt;What is displayed if there was an error ?&lt;/p&gt;
@@ -244,7 +237,6 @@ let pField =
     let pRepeated = stringCIReturn &quot;repeated&quot; (fieldSpec Repeated)
     let pField = ws &amp;gt;&amp;gt;. (pRequired &amp;lt;|&amp;gt; pOptional &amp;lt;|&amp;gt; pRepeated)
     
-    //TODO: fallback scalar to custom type
     let pName = ws &amp;gt;&amp;gt;. (noneOf &quot; =&quot; |&amp;gt; manyChars)
     let pId = ws &amp;gt;&amp;gt;. pstring &quot;=&quot; &amp;gt;&amp;gt;. spaces &amp;gt;&amp;gt;. pint32
 
@@ -349,8 +341,8 @@ run pProtos &quot;&quot;&quot;
 &lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 
-&lt;p&gt;Finally, we see step by step how to deal with FParsec to build and compose parser together by builder a full proto message parser.
-This parser could be composed with a enum parser. The enum parser could reuse the internal message parser, …&lt;/p&gt;</content><author><name></name></author><summary type="html">I would like to try FParsec fsharp parser to parse proto3 message.</summary></entry><entry><title type="html">Parser Combinator in real life</title><link href="https://cboudereau.github.io//fsharp,/parser/combinator/2017/08/09/why-parser.html" rel="alternate" type="text/html" title="Parser Combinator in real life" /><published>2017-08-09T13:14:01+02:00</published><updated>2017-08-09T13:14:01+02:00</updated><id>https://cboudereau.github.io//fsharp,/parser/combinator/2017/08/09/why-parser</id><content type="html" xml:base="https://cboudereau.github.io//fsharp,/parser/combinator/2017/08/09/why-parser.html">&lt;p&gt;I had to write an application that handle 2200 msg per second. 
+&lt;p&gt;Finally, we see step by step how to deal with FParsec to build and compose parser together by building a full proto message parser.
+This parser could be composed with an enum parser. The enum parser could reuse the internal message parser, and so on…&lt;/p&gt;</content><author><name></name></author><summary type="html">I would like to try FParsec fsharp parser to parse proto3 message.</summary></entry><entry><title type="html">Parser Combinator in real life</title><link href="https://cboudereau.github.io//fsharp,/parser/combinator/2017/08/09/why-parser.html" rel="alternate" type="text/html" title="Parser Combinator in real life" /><published>2017-08-09T13:14:01+02:00</published><updated>2017-08-09T13:14:01+02:00</updated><id>https://cboudereau.github.io//fsharp,/parser/combinator/2017/08/09/why-parser</id><content type="html" xml:base="https://cboudereau.github.io//fsharp,/parser/combinator/2017/08/09/why-parser.html">&lt;p&gt;I had to write an application that handle 2200 msg per second. 
 This application consist of indexing and compress data with 7z.&lt;/p&gt;
 
 &lt;blockquote&gt;

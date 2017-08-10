@@ -189,7 +189,7 @@ run pRequired fieldSample
 </code></pre>
 </div>
 
-<p>The pRequired will parse the work (case insensitive) required and return the fieldSpec with the parameter Required.
+<p>The pRequired will parse the word (case insensitive) required and return the fieldSpec with the parameter Required.
 Let see the fieldSpec func : f parameter could be one of the choice defined into the type :</p>
 
 <div class="highlighter-rouge"><pre class="highlight"><code>type Field = 
@@ -229,14 +229,7 @@ run pField "optional string CalStarttime=1" //Success: &lt;fun:pOptional@41-6&gt
 </code></pre>
 </div>
 
-<table>
-  <tbody>
-    <tr>
-      <td>We can see that the orElse operator (&lt;</td>
-      <td>&gt;) return the parser corresponding to the field rule (optional, required, repeated).</td>
-    </tr>
-  </tbody>
-</table>
+<p>We can see that the orElse operator <code class="highlighter-rouge">&lt;|&gt;</code> return the parser corresponding to the field rule (optional, required, repeated).</p>
 
 <p>Now we have a function that take only the type, name and id.</p>
 
@@ -284,7 +277,7 @@ run ScalarType.parser "double" //ParserResult&lt;string,unit&gt; = Success: "dou
 </ul>
 
 <p>The pzero is really intesting because it will always return Error with empty error message. 
-Combined with te orElse combinator it is like if you just force the second parser to be executed because the first parser will always failed.
+Combined with the orElse combinator it is like if you just force the second parser to be executed because the first parser will always failed.
 This is exactly what we want when we would like to fold the sequence of parsers to one parser.</p>
 
 <p>What is displayed if there was an error ?</p>
@@ -325,7 +318,6 @@ let pField =
     let pRepeated = stringCIReturn "repeated" (fieldSpec Repeated)
     let pField = ws &gt;&gt;. (pRequired &lt;|&gt; pOptional &lt;|&gt; pRepeated)
     
-    //TODO: fallback scalar to custom type
     let pName = ws &gt;&gt;. (noneOf " =" |&gt; manyChars)
     let pId = ws &gt;&gt;. pstring "=" &gt;&gt;. spaces &gt;&gt;. pint32
 
@@ -430,8 +422,8 @@ run pProtos """
 </code></pre>
 </div>
 
-<p>Finally, we see step by step how to deal with FParsec to build and compose parser together by builder a full proto message parser.
-This parser could be composed with a enum parser. The enum parser could reuse the internal message parser, …</p>
+<p>Finally, we see step by step how to deal with FParsec to build and compose parser together by building a full proto message parser.
+This parser could be composed with an enum parser. The enum parser could reuse the internal message parser, and so on…</p>
 
 
   </div>

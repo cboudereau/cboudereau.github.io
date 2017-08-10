@@ -407,7 +407,7 @@ convertFromString """
 - The use of operator and applicative separate the definition of the function from its execution. When you are debugging the run function you have to deal with a stack containing operator name (like GreaterGreaterEqual). Inlining the operator could help but it is more difficult to debug.
 - For now, in my experience, I delivered multiple fix / multiple parsers composition and it is not a big deal to change my habits, finally it was easy to fix and maintain.
 
-In a later post I will introduce [FParsec](http://www.quanttec.com/fparsec/) in order to parse proto3 file.
+In [this post]({% post_url 2017-08-10-proto3-parser %}) I will introduce [FParsec](http://www.quanttec.com/fparsec/) in order to parse proto3 file.
 
 ## Links
 - [Understanding Parser Combinators/Scott Wlaschin](https://fsharpforfunandprofit.com/posts/understanding-parser-combinators/)

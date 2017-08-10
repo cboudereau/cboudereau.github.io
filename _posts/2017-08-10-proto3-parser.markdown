@@ -110,7 +110,7 @@ let pRequired = stringCIReturn "required" (fieldSpec Required)
 run pRequired fieldSample
 ```
 
-The pRequired will parse the work (case insensitive) required and return the fieldSpec with the parameter Required.
+The pRequired will parse the word (case insensitive) required and return the fieldSpec with the parameter Required.
 Let see the fieldSpec func : f parameter could be one of the choice defined into the type :
 
 ```
@@ -150,7 +150,7 @@ run pField "repeated string CalStarttime=1" //Success: <fun:pRepeated@42-6>
 run pField "optional string CalStarttime=1" //Success: <fun:pOptional@41-6>
 ```
 
-We can see that the orElse operator (<|>) return the parser corresponding to the field rule (optional, required, repeated).
+We can see that the orElse operator ```<|>``` return the parser corresponding to the field rule (optional, required, repeated).
 
 Now we have a function that take only the type, name and id.
 
@@ -196,7 +196,7 @@ The parser function does :
 - use the orElse combinator and start with the pzero.
 
 The pzero is really intesting because it will always return Error with empty error message. 
-Combined with te orElse combinator it is like if you just force the second parser to be executed because the first parser will always failed.
+Combined with the orElse combinator it is like if you just force the second parser to be executed because the first parser will always failed.
 This is exactly what we want when we would like to fold the sequence of parsers to one parser.
 
 What is displayed if there was an error ?
@@ -238,7 +238,6 @@ let pField =
     let pRepeated = stringCIReturn "repeated" (fieldSpec Repeated)
     let pField = ws >>. (pRequired <|> pOptional <|> pRepeated)
     
-    //TODO: fallback scalar to custom type
     let pName = ws >>. (noneOf " =" |> manyChars)
     let pId = ws >>. pstring "=" >>. spaces >>. pint32
 
@@ -342,6 +341,6 @@ val it : ParserResult<Field list,unit> =
                                               Name = "CalEndtime";}]
 ```
 
-Finally, we see step by step how to deal with FParsec to build and compose parser together by builder a full proto message parser.
-This parser could be composed with a enum parser. The enum parser could reuse the internal message parser, ...
+Finally, we see step by step how to deal with FParsec to build and compose parser together by building a full proto message parser.
+This parser could be composed with an enum parser. The enum parser could reuse the internal message parser, and so on...
 

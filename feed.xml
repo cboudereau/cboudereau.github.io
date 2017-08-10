@@ -1,5 +1,356 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.5.1">Jekyll</generator><link href="https://cboudereau.github.io//feed.xml" rel="self" type="application/atom+xml" /><link href="https://cboudereau.github.io//" rel="alternate" type="text/html" /><updated>2017-08-10T11:17:39+02:00</updated><id>https://cboudereau.github.io//</id><title type="html">Yet Another Geek Blog</title><subtitle>Yet Another Geek Blog : dev with fun(ction)
-</subtitle><entry><title type="html">Parser Combinator in real life</title><link href="https://cboudereau.github.io//fsharp,/parser/combinator/2017/08/09/why-parser.html" rel="alternate" type="text/html" title="Parser Combinator in real life" /><published>2017-08-09T13:14:01+02:00</published><updated>2017-08-09T13:14:01+02:00</updated><id>https://cboudereau.github.io//fsharp,/parser/combinator/2017/08/09/why-parser</id><content type="html" xml:base="https://cboudereau.github.io//fsharp,/parser/combinator/2017/08/09/why-parser.html">&lt;p&gt;I had to write an application that handle 2200 msg per second. 
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.5.1">Jekyll</generator><link href="https://cboudereau.github.io//feed.xml" rel="self" type="application/atom+xml" /><link href="https://cboudereau.github.io//" rel="alternate" type="text/html" /><updated>2017-08-10T15:01:12+02:00</updated><id>https://cboudereau.github.io//</id><title type="html">Yet Another Geek Blog</title><subtitle>Yet Another Geek Blog : dev with fun(ction)
+</subtitle><entry><title type="html">How to parse a proto3 message with FParsec</title><link href="https://cboudereau.github.io//fsharp/parser/combinator/fparsec/proto3/2017/08/10/proto3-parser.html" rel="alternate" type="text/html" title="How to parse a proto3 message with FParsec" /><published>2017-08-10T13:13:00+02:00</published><updated>2017-08-10T13:13:00+02:00</updated><id>https://cboudereau.github.io//fsharp/parser/combinator/fparsec/proto3/2017/08/10/proto3-parser</id><content type="html" xml:base="https://cboudereau.github.io//fsharp/parser/combinator/fparsec/proto3/2017/08/10/proto3-parser.html">&lt;p&gt;I would like to try &lt;a href=&quot;http://www.quanttec.com/fparsec/&quot;&gt;FParsec&lt;/a&gt; fsharp parser to parse proto3 message.&lt;/p&gt;
+
+&lt;p&gt;I used this &lt;a href=&quot;http://www.quanttec.com/fparsec/&quot;&gt;FParsec&lt;/a&gt; &lt;a href=&quot;http://www.quanttec.com/fparsec/tutorial.html#parsing-json&quot;&gt;tutorial&lt;/a&gt; first in order to be more familiar with this library.&lt;/p&gt;
+
+&lt;h2 id=&quot;disclaimer&quot;&gt;Disclaimer&lt;/h2&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;This is not a production code
+proto3 specification is &lt;a href=&quot;https://developers.google.com/protocol-buffers/docs/proto3&quot;&gt;here&lt;/a&gt; if you want to continue with this script.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;the-proto3-message-sample&quot;&gt;The proto3 message sample&lt;/h2&gt;
+&lt;p&gt;proto3 is a message format used by &lt;a href=&quot;https://github.com/mgravell/protobuf-net&quot;&gt;protobuf-net&lt;/a&gt; for example and could be export from type having some attributes indicating the mapping Id &amp;lt;-&amp;gt; properties and other metadata for the serialization configuration.&lt;/p&gt;
+
+&lt;p&gt;For more information about proto spec, read this &lt;a href=&quot;https://developers.google.com/protocol-buffers/docs/proto3&quot;&gt;documentation&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;To start, I will use this first sample and make step by step all necessary function to get the type informations in this structure :&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;type Type = 
+    | Scalar of string
+    | Custom of string
+
+type FieldSpec = 
+    { Id : int
+      Type: Type
+      Name : string }
+
+type Field = 
+    | Required of FieldSpec
+    | Optional of FieldSpec
+    | Repeated of FieldSpec
+
+type Message = 
+    { Name : string
+      Fields : Field list } 
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Here is the sample that we will use all along this post :&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    message CalculateInfo {
+    required string CalStarttime=1;
+    optional string CalEndtime=2;
+    required string Smiles=3;
+    optional string CAS=4;
+    optional string ChName=5;
+    optional string EnName=6;
+    required string Param=7;
+    required bytes Result=8;
+    required bool IsFinished=9;
+    required bool IsFinished=9; }
+
+    message GetAllCalulateResponse{
+        required bool  isSuccessful = 1;
+        required int32 Count=2;
+        repeated CalculateInfo History=3; }
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;lets-go-&quot;&gt;Lets go !&lt;/h2&gt;
+&lt;p&gt;The FParsec references (I will write with REPL style, so I will use a .fsx).&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;#I __SOURCE_DIRECTORY__
+#r &quot;packages/FParsec/lib/net40-client/FParsecCS.dll&quot;
+#r &quot;packages/FParsec/lib/net40-client/FParsec.dll&quot;
+#r &quot;System.Core.dll&quot;
+#r &quot;System.dll&quot;
+#r &quot;System.Drawing.dll&quot;
+#r &quot;System.Numerics.dll&quot;
+
+open FParsec
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;step-1--extracting-the-name-of-the-message&quot;&gt;Step 1 : extracting the name of the message&lt;/h2&gt;
+&lt;p&gt;In our case we want to extract the first message name : CalculateInfo&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let msgSample = &quot;message CalculateInfo {&quot;
+
+let pMessage = spaces &amp;gt;&amp;gt;. pstringCI &quot;message&quot; &amp;gt;&amp;gt;. spaces &amp;gt;&amp;gt;. (noneOf &quot;{ &quot; |&amp;gt; manyChars) 
+
+run pMessage msgSample
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;The pMessage function will :&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;skip any spaces (including line break),&lt;/li&gt;
+  &lt;li&gt;parse the world (case insensitive) “message”,&lt;/li&gt;
+  &lt;li&gt;skip any spaces&lt;/li&gt;
+  &lt;li&gt;extract any chars (manyChars will convert chars to string) except (noneOf take a string and extract each char as blacklist) “ “ (whitespace) and “{“.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;The interactive will print this result :&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;val it : ParserResult&amp;lt;string,unit&amp;gt; = Success: &quot;CalculateInfo&quot;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;step-2--parse-1-field&quot;&gt;Step 2 : Parse 1 field&lt;/h2&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let fieldSample = &quot;required string CalStarttime=1&quot;
+
+let fieldSpec f t n i = f { FieldSpec.Id=i; Type=t; Name=n }
+let pRequired = stringCIReturn &quot;required&quot; (fieldSpec Required)
+
+run pRequired fieldSample
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;The pRequired will parse the work (case insensitive) required and return the fieldSpec with the parameter Required.
+Let see the fieldSpec func : f parameter could be one of the choice defined into the type :&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;type Field = 
+    | Required of FieldSpec
+    | Optional of FieldSpec
+    | Repeated of FieldSpec
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;When we look at the proto3 field definition we will parse in order :&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;required string CalStarttime=1
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;1/ Field rule
+2/ Type
+3/ Name 
+4/ Id&lt;/p&gt;
+
+&lt;p&gt;Look at the fieldSpec fun (defined in the previous code part) is exactly the adapter function that parsing after parsing will be applied to become in the end a Field instance.&lt;/p&gt;
+
+&lt;p&gt;Let just adapt the parser in order to parse the field rules optional or repeated :&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let ws = pchar ' ' |&amp;gt; manyChars |&amp;gt;&amp;gt; ignore
+
+let fieldSample = &quot;required string CalStarttime=1&quot;
+
+let fieldSpec f t n i = f { FieldSpec.Id=i; Type=t; Name=n }
+let pRequired = stringCIReturn &quot;required&quot; (fieldSpec Required)
+let pOptional = stringCIReturn &quot;optional&quot; (fieldSpec Optional)
+let pRepeated = stringCIReturn &quot;repeated&quot; (fieldSpec Repeated)
+let pField = ws &amp;gt;&amp;gt;. (pRequired &amp;lt;|&amp;gt; pOptional &amp;lt;|&amp;gt; pRepeated)
+
+run pField &quot;required string CalStarttime=1&quot; //Success: &amp;lt;fun:pRequired@40-8&amp;gt;
+run pField &quot;repeated string CalStarttime=1&quot; //Success: &amp;lt;fun:pRepeated@42-6&amp;gt;
+run pField &quot;optional string CalStarttime=1&quot; //Success: &amp;lt;fun:pOptional@41-6&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;table&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;We can see that the orElse operator (&amp;lt;&lt;/td&gt;
+      &lt;td&gt;&amp;gt;) return the parser corresponding to the field rule (optional, required, repeated).&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;Now we have a function that take only the type, name and id.&lt;/p&gt;
+
+&lt;p&gt;Let’s go to parse the type!&lt;/p&gt;
+
+&lt;p&gt;In proto, types are separated as scalar type and other types.&lt;/p&gt;
+
+&lt;p&gt;We will first parse the scalar type.
+The code is a little but boring, the most interesting part is the parser function :&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;module ScalarType = 
+    let private mapping = 
+        [ &quot;double&quot;,  typeof&amp;lt;double&amp;gt;
+          &quot;float&quot;,   typeof&amp;lt;float&amp;gt;
+          &quot;int32&quot;,   typeof&amp;lt;int&amp;gt;
+          &quot;int64&quot;,   typeof&amp;lt;int64&amp;gt;
+          &quot;uint32&quot;,  typeof&amp;lt;uint32&amp;gt;
+          &quot;uint64&quot;,  typeof&amp;lt;uint64&amp;gt;
+          &quot;sint32&quot;,  typeof&amp;lt;int32&amp;gt;
+          &quot;sint64&quot;,  typeof&amp;lt;int64&amp;gt;
+          &quot;fixed32&quot;, typeof&amp;lt;uint32&amp;gt;
+          &quot;fixed64&quot;, typeof&amp;lt;uint64&amp;gt;
+          &quot;sfixed32&quot;,typeof&amp;lt;int32&amp;gt;
+          &quot;sfixed64&quot;,typeof&amp;lt;int64&amp;gt;
+          &quot;bool&quot;,    typeof&amp;lt;bool&amp;gt;
+          &quot;string&quot;,  typeof&amp;lt;string&amp;gt;
+          &quot;bytes&quot;,   typeof&amp;lt;byte[]&amp;gt; ]
+        |&amp;gt; Map.ofList
+
+    let parser = 
+        mapping
+        |&amp;gt; Map.toSeq
+        |&amp;gt; Seq.map (fst &amp;gt;&amp;gt; pstring)
+        |&amp;gt; Seq.fold (&amp;lt;|&amp;gt;) pzero
+		
+run ScalarType.parser &quot;double&quot; //ParserResult&amp;lt;string,unit&amp;gt; = Success: &quot;double&quot;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;The parser function does :&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;take all scalar type as string into a seq.&lt;/li&gt;
+  &lt;li&gt;for each string, use a string parser&lt;/li&gt;
+  &lt;li&gt;use the orElse combinator and start with the pzero.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;The pzero is really intesting because it will always return Error with empty error message. 
+Combined with te orElse combinator it is like if you just force the second parser to be executed because the first parser will always failed.
+This is exactly what we want when we would like to fold the sequence of parsers to one parser.&lt;/p&gt;
+
+&lt;p&gt;What is displayed if there was an error ?&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;run ScalarType.parser &quot;hello&quot; (*val it : ParserResult&amp;lt;string,unit&amp;gt; =
+  Failure:
+Error in Ln: 1 Col: 1
+hello
+^
+Expecting: 'bool', 'bytes', 'double', 'fixed32', 'fixed64', 'float', 'int32',
+'int64', 'sfixed32', 'sfixed64', 'sint32', 'sint64', 'string', 'uint32' or
+'uint64'*)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Hey! not bad!&lt;/p&gt;
+
+&lt;p&gt;If it is not a scalar type, it is a custom type :&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let pWord = (&amp;lt;&amp;gt;) ' ' |&amp;gt; satisfy |&amp;gt; manyChars
+
+let pType = 
+    (ScalarType.parser |&amp;gt;&amp;gt; Scalar)
+    &amp;lt;|&amp;gt; (ws &amp;gt;&amp;gt;. pWord |&amp;gt;&amp;gt; Custom)
+	
+run pType &quot;hello&quot; //ParserResult&amp;lt;Type,unit&amp;gt; = Success: Custom &quot;hello&quot;
+
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;There is only the name and identifier missed to build the full field parser, so here is the full code of the field parser :&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let (&amp;lt;*&amp;gt;) f x = f &amp;gt;&amp;gt;= fun f' -&amp;gt; x &amp;gt;&amp;gt;= fun x' -&amp;gt; preturn (f' x')
+
+let pField = 
+    let fieldSpec f t n i = f { Id=i; Type=t; Name=n }
+    let pRequired = stringCIReturn &quot;required&quot; (fieldSpec Required)
+    let pOptional = stringCIReturn &quot;optional&quot; (fieldSpec Optional)
+    let pRepeated = stringCIReturn &quot;repeated&quot; (fieldSpec Repeated)
+    let pField = ws &amp;gt;&amp;gt;. (pRequired &amp;lt;|&amp;gt; pOptional &amp;lt;|&amp;gt; pRepeated)
+    
+    //TODO: fallback scalar to custom type
+    let pName = ws &amp;gt;&amp;gt;. (noneOf &quot; =&quot; |&amp;gt; manyChars)
+    let pId = ws &amp;gt;&amp;gt;. pstring &quot;=&quot; &amp;gt;&amp;gt;. spaces &amp;gt;&amp;gt;. pint32
+
+    pField &amp;lt;*&amp;gt; (ws &amp;gt;&amp;gt;. pType) &amp;lt;*&amp;gt; (ws &amp;gt;&amp;gt;. pName) &amp;lt;*&amp;gt; pId
+
+run pField &quot;required string CalStarttime=1&quot; 
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;The result will be :&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;val it : ParserResult&amp;lt;Field,unit&amp;gt; =
+  Success: Required {Id = 1;
+          Type = Scalar &quot;string&quot;;
+          Name = &quot;CalStarttime&quot;;}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Now we have to build a fields parser that parse multiple field !&lt;/p&gt;
+
+&lt;h2 id=&quot;step-3--parsing-n-fields&quot;&gt;Step 3 : Parsing n Fields&lt;/h2&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let pFields = spaces &amp;gt;&amp;gt;. sepEndBy pField (spaces &amp;gt;&amp;gt;. pchar ';' .&amp;gt;&amp;gt; spaces)
+
+run pFields &quot;&quot;&quot;required string CalStarttime=1;optional string CalEndtime=2&quot;&quot;&quot;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;with more samples :&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;run pFields &quot;&quot;&quot;required string CalStarttime=1; optional string CalEndtime=2;&quot;&quot;&quot;
+run pFields &quot;&quot;&quot;required string CalStarttime=1 ; optional string CalEndtime=2;&quot;&quot;&quot;
+run pFields &quot;&quot;&quot;
+required string CalStarttime=1 ; optional string CalEndtime=2;&quot;&quot;&quot;
+run pFields &quot;&quot;&quot;
+ required string CalStarttime=1 ; optional string CalEndtime=2;&quot;&quot;&quot;
+run pFields &quot;&quot;&quot;
+    required string CalStarttime=1 ; optional string CalEndtime=2;&quot;&quot;&quot;
+run pFields &quot;&quot;&quot;
+    required string CalStarttime=1;
+    optional string CalEndtime=2;&quot;&quot;&quot;
+run pFields &quot;&quot;&quot;
+    required string CalStarttime=1;
+    optional string CalEndtime=2;
+    
+    &quot;&quot;&quot;
+run pFields &quot;&quot;&quot;
+
+
+    required string CalStarttime=1;
+    optional string CalEndtime=2;
+    
+    &quot;&quot;&quot;
+run pFields &quot;&quot;&quot;
+
+
+    required string CalStarttime=1;
+
+    optional string CalEndtime=2;
+    
+    &quot;&quot;&quot;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;step-final--the-full-parser&quot;&gt;Step final : the full parser&lt;/h2&gt;
+&lt;p&gt;And now we have to combine pFields + pMessge together!&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let message name fields = { Fields=fields; Name=name }
+
+let pProtoMessage = pMessage |&amp;gt;&amp;gt; message .&amp;gt;&amp;gt; spaces .&amp;gt;&amp;gt; pchar '{' .&amp;gt;&amp;gt; spaces &amp;lt;*&amp;gt; pFields .&amp;gt;&amp;gt; spaces .&amp;gt;&amp;gt; pchar '}'
+
+let pProtos = sepEndBy pProtoMessage spaces
+
+run pProtos &quot;&quot;&quot;
+    message CalculateInfo {
+    required string CalStarttime=1;
+    optional string CalEndtime=2;
+    required string Smiles=3;
+    optional string CAS=4;
+    optional string ChName=5;
+    optional string EnName=6;
+    required string Param=7;
+    required bytes Result=8;
+    required bool IsFinished=9;
+    required bool IsFinished=9; }
+
+    message GetAllCalulateResponse{
+        required bool  isSuccessful = 1;
+        required int32 Count=2;
+        repeated CalculateInfo History=3; }
+&quot;&quot;&quot;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;And the final result of our parser!&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;val it : ParserResult&amp;lt;Field list,unit&amp;gt; =
+  Success: [Required {Id = 1;
+           Type = Scalar &quot;string&quot;;
+           Name = &quot;CalStarttime&quot;;}; Optional {Id = 2;
+                                              Type = Scalar &quot;string&quot;;
+                                              Name = &quot;CalEndtime&quot;;}]
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;Finally, we see step by step how to deal with FParsec to build and compose parser together by builder a full proto message parser.
+This parser could be composed with a enum parser. The enum parser could reuse the internal message parser, …&lt;/p&gt;</content><author><name></name></author><summary type="html">I would like to try FParsec fsharp parser to parse proto3 message.</summary></entry><entry><title type="html">Parser Combinator in real life</title><link href="https://cboudereau.github.io//fsharp,/parser/combinator/2017/08/09/why-parser.html" rel="alternate" type="text/html" title="Parser Combinator in real life" /><published>2017-08-09T13:14:01+02:00</published><updated>2017-08-09T13:14:01+02:00</updated><id>https://cboudereau.github.io//fsharp,/parser/combinator/2017/08/09/why-parser</id><content type="html" xml:base="https://cboudereau.github.io//fsharp,/parser/combinator/2017/08/09/why-parser.html">&lt;p&gt;I had to write an application that handle 2200 msg per second. 
 This application consist of indexing and compress data with 7z.&lt;/p&gt;
 
 &lt;blockquote&gt;
@@ -422,7 +773,7 @@ convertFromString &quot;&quot;&quot;
   &lt;li&gt;For now, in my experience, I delivered multiple fix / multiple parsers composition and it is not a big deal to change my habits, finally it was easy to fix and maintain.&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;In a later post I will introduce &lt;a href=&quot;http://www.quanttec.com/fparsec/&quot;&gt;FParsec&lt;/a&gt; in order to parse proto3 file.&lt;/p&gt;
+&lt;p&gt;In &lt;a href=&quot;/fsharp/parser/combinator/fparsec/proto3/2017/08/10/proto3-parser.html&quot;&gt;this post&lt;/a&gt; I will introduce &lt;a href=&quot;http://www.quanttec.com/fparsec/&quot;&gt;FParsec&lt;/a&gt; in order to parse proto3 file.&lt;/p&gt;
 
 &lt;h2 id=&quot;links&quot;&gt;Links&lt;/h2&gt;
 &lt;ul&gt;

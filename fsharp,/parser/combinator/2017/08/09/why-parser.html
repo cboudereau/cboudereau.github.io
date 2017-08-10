@@ -93,7 +93,7 @@ This application consist of indexing and compress data with 7z.</p>
 </blockquote>
 
 <blockquote>
-  <p>The XmlProvider is based on Linq so I had the sample problem.</p>
+  <p>The XmlProvider is based on Linq so I had the same problem.</p>
 </blockquote>
 
 <blockquote>
@@ -101,12 +101,12 @@ This application consist of indexing and compress data with 7z.</p>
 </blockquote>
 
 <h2 id="the-problem">The Problem</h2>
-<p>All my documents consist of xml document containing some important information to store and organise for indexation process and other data to just forward.</p>
+<p>All my documents consist of a xml document that contains information to store and organize for indexation process and other data to just forward (to the 7z zipper part).</p>
 
-<p>2 Elements of the xml contains log data with partners request/response data. 
+<p>2 elements of the xml contain logs of partners request/response data. 
 Those 2 elements could have more than 10MB and I don’t want to load this kind of message entirely due to LOH + GC problems (avg is near 1200msg/s :)).</p>
 
-<p>When I check the linq 2 xml implementation, it load the document entirely element by element in memory with the XmlReader.</p>
+<p>When I check the linq to xml implementation, it load the document entirely element by element in memory with the XmlReader.</p>
 
 <p>So, I first wrote a simple code that use the XmlReader but :</p>
 
@@ -116,7 +116,7 @@ Those 2 elements could have more than 10MB and I don’t want to load this kind 
   <li>But it works!</li>
 </ul>
 
-<p>After 2 weeks in production, I discover a corner case like this :</p>
+<p>After 2 weeks in production, I discover a new corner case like this :</p>
 
 <p>An Id could be represent as</p>
 
@@ -137,8 +137,8 @@ Those 2 elements could have more than 10MB and I don’t want to load this kind 
 <p>I remember how Linq and FSharp.Data were very usefull in this case but for the performance reason it is not ok!</p>
 
 <p>After dealing with if/else/pattern matching approach, I tried Parser Combinator style.
-Instead parsing char, the context was just simply the XmlReader.
-I don’t want to rewrite a full xml parser because parsing xml is hard and XmlReader is ok for that point.</p>
+Instead parsing char, the context used by the parser is the XmlReader.
+I don’t want to rewrite a full xml parser because parsing xml is too hard and XmlReader is ok for that point.</p>
 
 <h2 id="a-solution-in-functional-style">A Solution in Functional style</h2>
 
@@ -147,7 +147,7 @@ I don’t want to rewrite a full xml parser because parsing xml is hard and XmlR
 The solution should offer a maximum of flexibility to compose things together</p>
 </blockquote>
 
-<p>I would like to express code like</p>
+<p>I would like to express code like this :</p>
 
 <div class="highlighter-rouge"><pre class="highlight"><code>type Entry = { Id:string } 
 let convert message = 
@@ -259,7 +259,7 @@ let (.&gt;&gt;.) x y =
 </code></pre>
 </div>
 
-<p>The many function aim is like an unfold on List, 
+<p>The aim of many function is like an unfold on List, 
 so while there is no error aggregate result to a list and return the list on the first error</p>
 
 <div class="highlighter-rouge"><pre class="highlight"><code>let many x = 
@@ -274,7 +274,7 @@ so while there is no error aggregate result to a list and return the list on the
 </div>
 
 <p>The orElse combinator is like a branch condition, if x has an error then run y.
-But if x it is ok, just return x without running y</p>
+But if x is ok, just return x without running y</p>
 
 <div class="highlighter-rouge"><pre class="highlight"><code>let orElse x y = 
     fun reader -&gt;

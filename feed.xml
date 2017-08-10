@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.5.1">Jekyll</generator><link href="https://cboudereau.github.io//feed.xml" rel="self" type="application/atom+xml" /><link href="https://cboudereau.github.io//" rel="alternate" type="text/html" /><updated>2017-08-09T18:18:13+02:00</updated><id>https://cboudereau.github.io//</id><title type="html">Yet Another Geek Blog</title><subtitle>Yet Another Geek Blog : dev with fun(ction)
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.5.1">Jekyll</generator><link href="https://cboudereau.github.io//feed.xml" rel="self" type="application/atom+xml" /><link href="https://cboudereau.github.io//" rel="alternate" type="text/html" /><updated>2017-08-10T10:38:59+02:00</updated><id>https://cboudereau.github.io//</id><title type="html">Yet Another Geek Blog</title><subtitle>Yet Another Geek Blog : dev with fun(ction)
 </subtitle><entry><title type="html">Parser Combinator in real life</title><link href="https://cboudereau.github.io//fsharp,/parser/combinator/2017/08/09/why-parser.html" rel="alternate" type="text/html" title="Parser Combinator in real life" /><published>2017-08-09T13:14:01+02:00</published><updated>2017-08-09T13:14:01+02:00</updated><id>https://cboudereau.github.io//fsharp,/parser/combinator/2017/08/09/why-parser</id><content type="html" xml:base="https://cboudereau.github.io//fsharp,/parser/combinator/2017/08/09/why-parser.html">&lt;p&gt;I had to write an application that handle 2200 msg per second. 
 This application consist of indexing and compress data with 7z.&lt;/p&gt;
 
@@ -12,7 +12,7 @@ This application consist of indexing and compress data with 7z.&lt;/p&gt;
 &lt;/blockquote&gt;
 
 &lt;blockquote&gt;
-  &lt;p&gt;The XmlProvider is based on Linq so I had the sample problem.&lt;/p&gt;
+  &lt;p&gt;The XmlProvider is based on Linq so I had the same problem.&lt;/p&gt;
 &lt;/blockquote&gt;
 
 &lt;blockquote&gt;
@@ -20,12 +20,12 @@ This application consist of indexing and compress data with 7z.&lt;/p&gt;
 &lt;/blockquote&gt;
 
 &lt;h2 id=&quot;the-problem&quot;&gt;The Problem&lt;/h2&gt;
-&lt;p&gt;All my documents consist of xml document containing some important information to store and organise for indexation process and other data to just forward.&lt;/p&gt;
+&lt;p&gt;All my documents consist of a xml document that contains information to store and organize for indexation process and other data to just forward (to the 7z zipper part).&lt;/p&gt;
 
-&lt;p&gt;2 Elements of the xml contains log data with partners request/response data. 
+&lt;p&gt;2 elements of the xml contain logs of partners request/response data. 
 Those 2 elements could have more than 10MB and I don’t want to load this kind of message entirely due to LOH + GC problems (avg is near 1200msg/s :)).&lt;/p&gt;
 
-&lt;p&gt;When I check the linq 2 xml implementation, it load the document entirely element by element in memory with the XmlReader.&lt;/p&gt;
+&lt;p&gt;When I check the linq to xml implementation, it load the document entirely element by element in memory with the XmlReader.&lt;/p&gt;
 
 &lt;p&gt;So, I first wrote a simple code that use the XmlReader but :&lt;/p&gt;
 
@@ -35,7 +35,7 @@ Those 2 elements could have more than 10MB and I don’t want to load this kind 
   &lt;li&gt;But it works!&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;After 2 weeks in production, I discover a corner case like this :&lt;/p&gt;
+&lt;p&gt;After 2 weeks in production, I discover a new corner case like this :&lt;/p&gt;
 
 &lt;p&gt;An Id could be represent as&lt;/p&gt;
 
@@ -56,8 +56,8 @@ Those 2 elements could have more than 10MB and I don’t want to load this kind 
 &lt;p&gt;I remember how Linq and FSharp.Data were very usefull in this case but for the performance reason it is not ok!&lt;/p&gt;
 
 &lt;p&gt;After dealing with if/else/pattern matching approach, I tried Parser Combinator style.
-Instead parsing char, the context was just simply the XmlReader.
-I don’t want to rewrite a full xml parser because parsing xml is hard and XmlReader is ok for that point.&lt;/p&gt;
+Instead parsing char, the context used by the parser is the XmlReader.
+I don’t want to rewrite a full xml parser because parsing xml is too hard and XmlReader is ok for that point.&lt;/p&gt;
 
 &lt;h2 id=&quot;a-solution-in-functional-style&quot;&gt;A Solution in Functional style&lt;/h2&gt;
 
@@ -66,7 +66,7 @@ I don’t want to rewrite a full xml parser because parsing xml is hard and XmlR
 The solution should offer a maximum of flexibility to compose things together&lt;/p&gt;
 &lt;/blockquote&gt;
 
-&lt;p&gt;I would like to express code like&lt;/p&gt;
+&lt;p&gt;I would like to express code like this :&lt;/p&gt;
 
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;type Entry = { Id:string } 
 let convert message = 
@@ -178,7 +178,7 @@ let (.&amp;gt;&amp;gt;.) x y =
 &lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 
-&lt;p&gt;The many function aim is like an unfold on List, 
+&lt;p&gt;The aim of many function is like an unfold on List, 
 so while there is no error aggregate result to a list and return the list on the first error&lt;/p&gt;
 
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let many x = 
@@ -193,7 +193,7 @@ so while there is no error aggregate result to a list and return the list on the
 &lt;/div&gt;
 
 &lt;p&gt;The orElse combinator is like a branch condition, if x has an error then run y.
-But if x it is ok, just return x without running y&lt;/p&gt;
+But if x is ok, just return x without running y&lt;/p&gt;
 
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let orElse x y = 
     fun reader -&amp;gt;

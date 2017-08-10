@@ -12,17 +12,17 @@ This application consist of indexing and compress data with 7z.
 ## Disclaimer
 > I attempted to use Linq to xml that load entirely the document element by element in memory causing LOH (on data that I don't want to index) problem when a big element is loaded.
 
-> The XmlProvider is based on Linq so I had the sample problem.
+> The XmlProvider is based on Linq so I had the same problem.
 
 > Both are very usefull and the usage of parser combinator is overkill when there is no reason :)
 
 ## The Problem
-All my documents consist of xml document containing some important information to store and organise for indexation process and other data to just forward.
+All my documents consist of a xml document that contains information to store and organize for indexation process and other data to just forward (to the 7z zipper part).
 
-2 Elements of the xml contains log data with partners request/response data. 
+2 elements of the xml contain logs of partners request/response data. 
 Those 2 elements could have more than 10MB and I don't want to load this kind of message entirely due to LOH + GC problems (avg is near 1200msg/s :)).
 
-When I check the linq 2 xml implementation, it load the document entirely element by element in memory with the XmlReader.
+When I check the linq to xml implementation, it load the document entirely element by element in memory with the XmlReader.
 
 So, I first wrote a simple code that use the XmlReader but : 
 
@@ -30,7 +30,7 @@ So, I first wrote a simple code that use the XmlReader but :
 - It is hard to have a clean context
 - But it works!
 
-After 2 weeks in production, I discover a corner case like this : 
+After 2 weeks in production, I discover a new corner case like this : 
 
 An Id could be represent as 
 
@@ -51,15 +51,15 @@ An Id could be represent as
 I remember how Linq and FSharp.Data were very usefull in this case but for the performance reason it is not ok!
 
 After dealing with if/else/pattern matching approach, I tried Parser Combinator style.
-Instead parsing char, the context was just simply the XmlReader.
-I don't want to rewrite a full xml parser because parsing xml is hard and XmlReader is ok for that point. 
+Instead parsing char, the context used by the parser is the XmlReader.
+I don't want to rewrite a full xml parser because parsing xml is too hard and XmlReader is ok for that point. 
 
 ## A Solution in Functional style
 
 > I have to index a lots of document so compose a parser should be easy
 > The solution should offer a maximum of flexibility to compose things together
 
-I would like to express code like
+I would like to express code like this : 
 
 ```
 type Entry = { Id:string } 
@@ -165,7 +165,7 @@ let (.>>.) x y =
     |> Parser
 ```
 
-The many function aim is like an unfold on List, 
+The aim of many function is like an unfold on List, 
 so while there is no error aggregate result to a list and return the list on the first error
 
 ```
@@ -180,7 +180,7 @@ let many x =
 ```
 
 The orElse combinator is like a branch condition, if x has an error then run y.
-But if x it is ok, just return x without running y
+But if x is ok, just return x without running y
    
 ```
 let orElse x y = 

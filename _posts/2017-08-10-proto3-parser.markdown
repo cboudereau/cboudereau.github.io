@@ -18,7 +18,7 @@ proto3 is a message format used by [protobuf-net](https://github.com/mgravell/pr
 
 For more information about proto spec, read this [documentation](https://developers.google.com/protocol-buffers/docs/proto3).
 
-To start, I will use this first sample and make step by step all necessary function to get the type informations in this structure : 
+To start, I will use this first sample and make step by step all parsers to get the type info in this structure : 
 
 ```
 type Type = 
@@ -159,7 +159,7 @@ Let's go to parse the type!
 In proto, types are separated as scalar type and other types.
 
 We will first parse the scalar type.
-The code is a little but boring, the most interesting part is the parser function : 
+The code is a little bit boring, the most interesting part is the parser function : 
 
 ```
 module ScalarType = 
@@ -190,7 +190,7 @@ module ScalarType =
 run ScalarType.parser "double" //ParserResult<string,unit> = Success: "double"
 ```
 
-The parser function does : 
+The parser function aim : 
 - take all scalar type as string into a seq.
 - for each string, use a string parser
 - use the orElse combinator and start with the pzero.

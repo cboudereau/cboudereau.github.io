@@ -95,7 +95,7 @@ proto3 specification is <a href="https://developers.google.com/protocol-buffers/
 
 <p>For more information about proto spec, read this <a href="https://developers.google.com/protocol-buffers/docs/proto3">documentation</a>.</p>
 
-<p>To start, I will use this first sample and make step by step all necessary function to get the type informations in this structure :</p>
+<p>To start, I will use this first sample and make step by step all parsers to get the type info in this structure :</p>
 
 <div class="highlighter-rouge"><pre class="highlight"><code>type Type = 
     | Scalar of string
@@ -238,7 +238,7 @@ run pField "optional string CalStarttime=1" //Success: &lt;fun:pOptional@41-6&gt
 <p>In proto, types are separated as scalar type and other types.</p>
 
 <p>We will first parse the scalar type.
-The code is a little but boring, the most interesting part is the parser function :</p>
+The code is a little bit boring, the most interesting part is the parser function :</p>
 
 <div class="highlighter-rouge"><pre class="highlight"><code>module ScalarType = 
     let private mapping = 
@@ -269,7 +269,7 @@ run ScalarType.parser "double" //ParserResult&lt;string,unit&gt; = Success: "dou
 </code></pre>
 </div>
 
-<p>The parser function does :</p>
+<p>The parser function aim :</p>
 <ul>
   <li>take all scalar type as string into a seq.</li>
   <li>for each string, use a string parser</li>

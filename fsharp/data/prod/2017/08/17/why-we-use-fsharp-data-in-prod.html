@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Why we use fsharp data in prod</title>
+  <meta name="description" content="Actually, I work for a company that deal with hundreds of connectivities.">
+
+  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="canonical" href="https://cboudereau.github.io//fsharp/data/prod/2017/08/17/why-we-use-fsharp-data-in-prod.html">
+  <link rel="alternate" type="application/rss+xml" title="Yet Another Geek Blog" href="/feed.xml">
+  
+  
+</head>
+
+
+  <body>
+
+    <header class="site-header" role="banner">
+
+  <div class="wrapper">
+    
+    
+    <a class="site-title" href="/">Yet Another Geek Blog</a>
+  
+    
+      <nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+              <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+              <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger">
+          
+            
+            
+          
+            
+            
+            <a class="page-link" href="/about/">About</a>
+            
+          
+            
+            
+          
+            
+            
+          
+            
+            
+          
+        </div>
+      </nav>
+    
+  </div>
+</header>
+
+
+    <main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">Why we use fsharp data in prod</h1>
+    <p class="post-meta">
+      <time datetime="2017-08-17T13:04:00+02:00" itemprop="datePublished">
+        
+        Aug 17, 2017
+      </time>
+      </p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <p>Actually, I work for a company that deal with hundreds of connectivities.</p>
+
+<p>We have since 2014 used fsharp data progressively in production.</p>
+
+<p>Today we have more than 10% and 1 of the top 3 (top business, high performance) in prod plus a custom big data solution in full fsharp (zmq + 7z + Azure)</p>
+
+<p>We use fsharp data into different stages of a project : estimation, proof of concept, dev</p>
+
+<h2 id="our-context">Our context</h2>
+
+<p>A connectivity is an adapter to exchange data with a partner.
+This partner use often a “standard”. This standard <a href="http://opentravel.org/#sthash.4w8LbhfH.dpbs">OTA</a> try to unify the communication between two partner. The bad news is : everything in OTA is optional.</p>
+
+<p>What’s the problem ?</p>
+
+<blockquote>
+  <p>Every partner has his own set of required and optional data.</p>
+</blockquote>
+
+<blockquote>
+  <p>Values are defined on an interval (another post could be dedicated to this part) and each partner has his own interval valued scope</p>
+</blockquote>
+
+<blockquote>
+  <p>Some partner does not use OTA anymore or they don’t know that OTA exists (due to historical reason, …)</p>
+</blockquote>
+
+<blockquote>
+  <p>Even if the partner has a poor interface, we have to integrate it has quick as possible</p>
+</blockquote>
+
+<h2 id="code-analysis-on-our-existing-apps">Code analysis on our existing apps</h2>
+<p>When I was arrived in this company, I had ran <a href="http://www.ndepend.com/">NDepend</a> and <a href="https://www.sonarqube.org/">Sonar</a> to see :</p>
+<ul>
+  <li>how modules are dependent (visualize and navigate to the graph)</li>
+  <li>how many lines of codes depend on a module</li>
+</ul>
+
+<p>Each connector has around 35% of codes that use <code class="highlighter-rouge">System.Xml.Linq</code> and 50% of tests are dedicated to serialization/deserialization part.</p>
+
+<h2 id="maintenability">Maintenability</h2>
+<p>When we have to fix an existing app, we have to add a test, run the test and see where there was a problem.
+It is really boring and the partner will often break there compatibility.</p>
+
+<p>When we build a new connector, with xml linq we have in the end a lot of method like this :</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>private static Stuff BuildStuff(XDocument responseXml, XElement name)
+</code></pre>
+</div>
+
+<p>Passing <code class="highlighter-rouge">XElement</code>, <code class="highlighter-rouge">XDocument</code>, any xml linq parameter does not supply the context : the what. We have constantly to dev with the sample to the right side because it is totally dynamic.</p>
+
+<p>When I analyse this kind of code it is really hard to analyse the code without the sample and the big picture.</p>
+
+<p>Here is an example :</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>&lt;node&gt;
+
+	&lt;item&gt;
+		&lt;value&gt;10&lt;/value&gt;
+	&lt;/item&gt;
+	&lt;value&gt;100&lt;/value&gt;
+
+&lt;/node&gt;
+</code></pre>
+</div>
+
+<p>the associated code that get all values:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>class Program
+{
+	private static IEnumerable&lt;decimal&gt; Values(XElement x)
+	{
+		return x.Descendants("value").Select(y =&gt; Decimal.Parse(y.Value));
+	}
+	static void Main(string[] args)
+	{
+		var xml = XDocument.Parse(@"&lt;node&gt;&lt;item&gt;&lt;value&gt;10&lt;/value&gt;&lt;/item&gt;&lt;value&gt;100&lt;/value&gt;&lt;/node&gt;");
+
+		var v1 = Values(xml.Root);
+		var v2 = Values(xml.Descendants("item").First());
+
+		Console.WriteLine("from root");
+		v1.ToList().ForEach(x =&gt; Console.WriteLine("value : {0}", x));
+
+		Console.WriteLine("from item");
+		v2.ToList().ForEach(x =&gt; Console.WriteLine("value : {0}", x));
+
+		Console.ReadLine();
+	}
+}
+</code></pre>
+</div>
+
+<p>When the code is bigger you have to analyse the usage of the method to understand the context.</p>
+
+<p>In the previous sample, the function does not return the same value depending of the context.</p>
+
+<p>Here is a version with the XmlProvider of <a href="http://fsharp.github.io/FSharp.Data/">Fsharp.Data</a> :</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>#r @"..\packages\FSharp.Data\lib\net40\FSharp.Data.dll"
+open FSharp.Data
+
+let [&lt;Literal&gt;] nodeSample = """&lt;node&gt;
+
+	&lt;item&gt;
+		&lt;value&gt;10&lt;/value&gt;
+	&lt;/item&gt;
+	&lt;value&gt;100&lt;/value&gt;
+
+&lt;/node&gt;"""
+
+type Node = XmlProvider&lt; nodeSample &gt;
+
+let node = Node.Parse(nodeSample)
+
+printfn "from root"
+printfn "%i" (node.Value)
+printfn "from item"
+printfn "%i" (node.Item.Value)
+</code></pre>
+</div>
+
+<blockquote>
+  <p>In this version, there is no need to build a function to extract and parse the value.
+There is no ambigous context between the item and root value</p>
+</blockquote>
+
+<h2 id="the-friend-of-estimation">The friend of estimation</h2>
+
+<p>In our team, we analyse complexity to dispatch work by using t-shirt size scale.
+I use fsharp to build a simple fsx with our domain, the data sample of the partner in order to understand their domain (It is not only protocol but domain and business adaptation over the time intervals)
+FSharp.Data speed up the process because the porcelain and plumbing part (xml, json, … all service layer) is done by FSharp.Data and we have a better complexity feedback.
+The reason it that sometimes, the partner protocol is really verbose and it is harder to navigate into a json or xml than an instanciated object in the interactive mode).</p>
+
+<p>Before using fsharp.data, I was a System.Xml.Linq ninja :) for estimation purpose, but for now, each time there was a verbose/complex data to understand, I first use a fsharp script.</p>
+
+<h2 id="flexibility">Flexibility</h2>
+
+<p>When the partner change their protocol, we have to change the adapter with the new sample and it is really hard to make a diff between 2 sample where data is completely different.
+So, we add a test like but due to the context problem, it is really hard to see if the change have same name but not the same structure and scope.</p>
+
+<p>Like Xml Linq, FSharp.Data is tolerent :</p>
+
+<ul>
+  <li>What about changes that we don’t need :</li>
+</ul>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>#r @"..\packages\FSharp.Data\lib\net40\FSharp.Data.dll"
+open FSharp.Data
+
+type Node = XmlProvider&lt; """&lt;root&gt;&lt;code&gt;ABC&lt;/code&gt;&lt;id&gt;50&lt;/id&gt;&lt;/root&gt;""" &gt;
+
+let node = Node.Parse("""&lt;root&gt;&lt;code&gt;ABC&lt;/code&gt;&lt;/root&gt;""")
+</code></pre>
+</div>
+
+<blockquote>
+  <p>Note that the parse content does not have an id element</p>
+</blockquote>
+
+<p>The interactive display :</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>Code : ABC
+</code></pre>
+</div>
+
+<ul>
+  <li>Breaking changes at runtime (when the partner break things directly in prod : data differ from the spec at runtime)</li>
+</ul>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>#r @"..\packages\FSharp.Data\lib\net40\FSharp.Data.dll"
+open FSharp.Data
+
+type Node = XmlProvider&lt; """&lt;root&gt;&lt;code&gt;ABC&lt;/code&gt;&lt;id&gt;50&lt;/id&gt;&lt;/root&gt;""" &gt;
+
+let node = Node.Parse("""&lt;root&gt;&lt;code&gt;ABC&lt;/code&gt;&lt;/root&gt;""")
+
+printfn "Id : %i" (node.Id)
+</code></pre>
+</div>
+
+<p>The code compiles but there was a problem at runtime :</p>
+<div class="highlighter-rouge"><pre class="highlight"><code>System.Exception: XML mismatch: Expected exactly one 'id' child, got 0
+</code></pre>
+</div>
+
+<ul>
+  <li>Breaking changes on legacy code (when a make a quick fix) :</li>
+</ul>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>#r @"..\packages\FSharp.Data\lib\net40\FSharp.Data.dll"
+open FSharp.Data
+
+type Node = XmlProvider&lt; """&lt;root&gt;&lt;code&gt;ABC&lt;/code&gt;&lt;/root&gt;""" &gt;
+
+let node = Node.Parse("""&lt;root&gt;&lt;code&gt;ABC&lt;/code&gt;&lt;/root&gt;""")
+
+printfn "Id : %i" (node.Id)
+</code></pre>
+</div>
+
+<blockquote>
+  <p>Note that the required Id (used by the printfn) has been removed from the given sample</p>
+</blockquote>
+
+<p>There is an error at design time that we have to fix without adding a new unit test.</p>
+
+<h2 id="performance">Performance</h2>
+
+<p>FSharp.Data use an erased type provider, so the cost of this abstraction is paid at design time.</p>
+
+<p>When the application is built, all supplied types (like the type Node in our sample) are discarded.</p>
+
+<p>So all the abstraction is inline by a System.Xml.Linq call. The performance is equivalent to the System.Xml.Linq version.</p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<ul>
+  <li>We have first use a fsharp module to existing csharp apps in order to infer the partner domain</li>
+  <li>The performance are equivalent to a hand made Xml Linq version</li>
+  <li>The estimation part is quicker because it require less xml linq plumbing</li>
+  <li>Quick fix is possible due to the move from unit test feedback to design time and compiler feedback</li>
+  <li>There was more test around the domain of our partner and not only on the serialization/deserialization part</li>
+  <li>I have replaced my linqpad + fiddler by fsharp script</li>
+  <li>When the breaking changes are too high, we completelty rewrite the adapter by using fsharp and see that the LOC has half</li>
+  <li>The proof of concept code could be reused (better than extract linqpad code and import to existing + code after unit test)</li>
+</ul>
+
+  </div>
+
+  
+</article>
+
+      </div>
+    </main>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">Yet Another Geek Blog</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li>
+            
+              Yet Another Geek Blog
+            
+            </li>
+            
+            <li><a href="mailto:cboudereau@gmail.com">cboudereau@gmail.com</a></li>
+            
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+            <a href="https://github.com/cboudereau"><span class="icon icon--github"><svg viewBox="0 0 16 16" width="16px" height="16px"><path fill="#828282" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z"/></svg>
+</span><span class="username">cboudereau</span></a>
+
+          </li>
+          
+
+          
+          <li>
+            <a href="https://twitter.com/cboudereau"><span class="icon icon--twitter"><svg viewBox="0 0 16 16" width="16px" height="16px"><path fill="#828282" d="M15.969,3.058c-0.586,0.26-1.217,0.436-1.878,0.515c0.675-0.405,1.194-1.045,1.438-1.809c-0.632,0.375-1.332,0.647-2.076,0.793c-0.596-0.636-1.446-1.033-2.387-1.033c-1.806,0-3.27,1.464-3.27,3.27 c0,0.256,0.029,0.506,0.085,0.745C5.163,5.404,2.753,4.102,1.14,2.124C0.859,2.607,0.698,3.168,0.698,3.767 c0,1.134,0.577,2.135,1.455,2.722C1.616,6.472,1.112,6.325,0.671,6.08c0,0.014,0,0.027,0,0.041c0,1.584,1.127,2.906,2.623,3.206 C3.02,9.402,2.731,9.442,2.433,9.442c-0.211,0-0.416-0.021-0.615-0.059c0.416,1.299,1.624,2.245,3.055,2.271 c-1.119,0.877-2.529,1.4-4.061,1.4c-0.264,0-0.524-0.015-0.78-0.046c1.447,0.928,3.166,1.469,5.013,1.469 c6.015,0,9.304-4.983,9.304-9.304c0-0.142-0.003-0.283-0.009-0.423C14.976,4.29,15.531,3.714,15.969,3.058z"/></svg>
+</span><span class="username">cboudereau</span></a>
+
+          </li>
+          
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <p>Yet Another Geek Blog : dev with fun(ction)
+</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+
+  </body>
+
+</html>

@@ -5,20 +5,26 @@ date:   2017-08-17 13:04:00 +0200
 categories: fsharp data prod
 ---
 
-Actually, I work for a company that deal with hundreds of connectivities. 
+I am currently working at a company that deal with hundreds of connectivities (apps protocol and domain adapters + big data). 
 
-We have since 2014 used fsharp data progressively in production.
+We have since 2014 used fsharp data progressively in production (I use fsharp in prod since 2012).
 
-Today we have more than 10% and 1 of the top 3 (top business, high performance) in prod plus a custom big data solution in full fsharp (zmq + 7z + Azure)
+Today we have more than 10% and 1 of the top 3 (top business, high performance) in prod plus a custom big data solution in full fsharp (zmq + 7z + Azure, the company guarantee in case of sales/stockout risk)
 
-We use fsharp data into different stages of a project : estimation, proof of concept, dev
+We use fsharp data into different stages of a project : estimation, proof of concept, dev.
+
+After 3 years of production with fsharp, I would like to serialize my experience.
 
 ## Our context
 
 A connectivity is an adapter to exchange data with a partner.
 This partner use often a "standard". This standard [OTA](http://opentravel.org/#sthash.4w8LbhfH.dpbs) try to unify the communication between two partner. The bad news is : everything in OTA is optional.
 
+> 70% of our partner try to use OTA standard and others use their own standard
+
 What's the problem ?
+
+> The protocol is verbose (Hard to see with an editor the key data, due to semantic issue, interval scope, ...)
 
 > Every partner has his own set of required and optional data.
 
@@ -30,16 +36,16 @@ What's the problem ?
 
 ## Code analysis on our existing apps
 When I was arrived in this company, I had ran [NDepend](http://www.ndepend.com/) and [Sonar](https://www.sonarqube.org/) to see : 
- - how modules are dependent (visualize and navigate to the graph)
- - how many lines of codes depend on a module
+ - how modules are dependent (visualize and navigate to the dependency graph)
+ - how many lines of codes depend on a module (+ the use of Resharper)
  
-Each connector has around 35% of codes that use ```System.Xml.Linq``` and 50% of tests are dedicated to serialization/deserialization part.
+Each connector has approximatively 35% of codes that use ```System.Xml.Linq``` and 50% of tests are dedicated to serialization/deserialization part (test are focussed on serialization + domain adaptation without separation).
 
 ## Maintenability
 When we have to fix an existing app, we have to add a test, run the test and see where there was a problem.
-It is really boring and the partner will often break there compatibility.
+It is really boring and the partner will often break their compatibility.
 
-When we build a new connector, with xml linq we have in the end a lot of method like this : 
+When we build a new connector with xml linq, we have in the end a lot of method like this : 
 
 ```
 private static Stuff BuildStuff(XDocument responseXml, XElement name)
@@ -96,6 +102,8 @@ In the previous sample, the function does not return the same value depending of
 Here is a version with the XmlProvider of [Fsharp.Data](http://fsharp.github.io/FSharp.Data/) : 
 ```
 #r @"..\packages\FSharp.Data\lib\net40\FSharp.Data.dll"
+#r "System.Xml.Linq"
+
 open FSharp.Data
 
 let [<Literal>] nodeSample = """<node>
@@ -122,17 +130,29 @@ printfn "%i" (node.Item.Value)
 
 ## The friend of estimation
 
-In our team, we analyse complexity to dispatch work by using t-shirt size scale.
+In our team, we analyse complexity to dispatch work by using t-shirt size scale. 
+The t-shirt size scale is really understand but sometimes a S project could be an L project due to estimation error.
 I use fsharp to build a simple fsx with our domain, the data sample of the partner in order to understand their domain (It is not only protocol but domain and business adaptation over the time intervals)
 FSharp.Data speed up the process because the porcelain and plumbing part (xml, json, ... all service layer) is done by FSharp.Data and we have a better complexity feedback.
-The reason it that sometimes, the partner protocol is really verbose and it is harder to navigate into a json or xml than an instanciated object in the interactive mode).
+The reason it that sometimes the partner protocol is really verbose and it is harder to navigate into a json or xml than an instanciated object in the interactive mode.
 
 Before using fsharp.data, I was a System.Xml.Linq ninja :) for estimation purpose, but for now, each time there was a verbose/complex data to understand, I first use a fsharp script.
 
 ## Flexibility
 
-When the partner change their protocol, we have to change the adapter with the new sample and it is really hard to make a diff between 2 sample where data is completely different.
-So, we add a test like but due to the context problem, it is really hard to see if the change have same name but not the same structure and scope.
+When the partner change his protocol, we have to change the adapter with the new sample and it is really hard to make a diff between 2 sample where data are completely different (this 2 samples has been provided at 2 moment and/or 2 different person).
+So, we add a new test but due to the context problem, it is really hard to see if the change have same name but not the same structure and scope.
+
+> If all test are done, there is only one test for the new protocol and other based on old protocol
+> If there is a cardinality problems it is really hard to see how it impact the business part (price scope for example).
+
+I prefer use fsharp because if there is a new scope (a new node for example), the code refuse to compile and we have to reason about the whole code. 
+
+> How to support both new and old protocol in the same app without error ?
+
+> We need a tool to challenge the existing code with the new protocol
+
+Here is some example where fsharp data help us to increase the quality and the velocity of our process :
 
 Like Xml Linq, FSharp.Data is tolerent : 
 
@@ -140,6 +160,8 @@ Like Xml Linq, FSharp.Data is tolerent :
 
 ```
 #r @"..\packages\FSharp.Data\lib\net40\FSharp.Data.dll"
+#r "System.Xml.Linq"
+
 open FSharp.Data
 
 type Node = XmlProvider< """<root><code>ABC</code><id>50</id></root>""" >
@@ -158,6 +180,8 @@ Code : ABC
 
 ```
 #r @"..\packages\FSharp.Data\lib\net40\FSharp.Data.dll"
+#r "System.Xml.Linq"
+
 open FSharp.Data
 
 type Node = XmlProvider< """<root><code>ABC</code><id>50</id></root>""" >
@@ -172,10 +196,14 @@ The code compiles but there was a problem at runtime :
 System.Exception: XML mismatch: Expected exactly one 'id' child, got 0
 ```
 
-- Breaking changes on legacy code (when a make a quick fix) : 
+> For this case, you should consider logging this error with the associated data.
+
+- Breaking changes on legacy code (quick fix) : 
 
 ```
 #r @"..\packages\FSharp.Data\lib\net40\FSharp.Data.dll"
+#r "System.Xml.Linq"
+
 open FSharp.Data
 
 type Node = XmlProvider< """<root><code>ABC</code></root>""" >
@@ -187,7 +215,48 @@ printfn "Id : %i" (node.Id)
 
 > Note that the required Id (used by the printfn) has been removed from the given sample
 
-There is an error at design time that we have to fix without adding a new unit test.
+There is an error at design time that we have to fix without adding a new unit test (may be we have to adapt the code without touching test and samples if you want to support both).
+
+- When you have to support multiple version
+```
+#r @"..\packages\FSharp.Data\lib\net40\FSharp.Data.dll"
+#r "System.Xml.Linq"
+open FSharp.Data
+
+type Node = XmlProvider< """
+<samples>
+<!-- version 1 -->
+<root><code>ABC</code></root>
+<!-- version 2 -->
+<root><productcode>ABC</productcode></root>
+
+</samples>""", SampleIsList=true >
+
+let toResult error = function
+    | Some x -> Ok x
+    | None -> Error error
+
+let (<|>) x y = 
+    match x with
+    | Ok x' -> Ok x'
+    | Error e1 ->
+        match y with 
+        | Ok y' -> Ok y'
+        | Error e2 -> sprintf "%s\r\nor%s" e1 e2 |> Error
+
+let prettyprint (node:Node.Root) = 
+    printfn "Code : %A" ((node.Code |> toResult "expected code element") <|> (node.Productcode |> toResult "expected Productcode element"))
+
+let nodeLegacy = Node.Parse("""<root><code>ABC</code></root>""")
+let nodeNew = Node.Parse("""<root><productcode>ABC</productcode></root>""")
+
+prettyprint nodeLegacy
+prettyprint nodeNew
+```
+
+> I have added the 2 versions in the samples of the XmlProvider by adding a new <samples> root node and the SampleIsList to true parameter. In that case, the XmlProvider skip the first element and consider many child elements to be processed.
+
+> I have added 2 function : the toResult that add the errorMessage when the element is not present and the orElse (<|>) function to handle the 2 versions. The prettyprint function display the result
 
 ## Performance
 
@@ -207,3 +276,5 @@ So all the abstraction is inline by a System.Xml.Linq call. The performance is e
 - I have replaced my linqpad + fiddler by fsharp script
 - When the breaking changes are too high, we completelty rewrite the adapter by using fsharp and see that the LOC has half 
 - The proof of concept code could be reused (better than extract linqpad code and import to existing + code after unit test)
+- The language ML syntax provide a better way to avoid NRE (Null Reference Exception) when you only deal with fsharp. There is Option.ofObj adapters when object came from csharp.
+- Since we have made our adaptation of the interval valued adaptation in full fsharp [Outatime](https://github.com/cboudereau/Outatime)

@@ -271,6 +271,8 @@ When the application is built, all supplied types (like the type Node in our sam
 
 So all the abstraction is inlined by a System.Xml.Linq call. The performance is equivalent to the System.Xml.Linq version.
 
+Our most verbose app that use fsharp.data exchange near 3.000.000 rq/day.
+
 ## Conclusion
 
 - We have first use a fsharp module to existing csharp apps in order to infer the partner domain

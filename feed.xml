@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.5.1">Jekyll</generator><link href="https://cboudereau.github.io//feed.xml" rel="self" type="application/atom+xml" /><link href="https://cboudereau.github.io//" rel="alternate" type="text/html" /><updated>2017-08-18T13:36:43+02:00</updated><id>https://cboudereau.github.io//</id><title type="html">Yet Another Geek Blog</title><subtitle>Yet Another Geek Blog : dev with fun(ction)
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.5.1">Jekyll</generator><link href="https://cboudereau.github.io//feed.xml" rel="self" type="application/atom+xml" /><link href="https://cboudereau.github.io//" rel="alternate" type="text/html" /><updated>2017-08-18T13:43:20+02:00</updated><id>https://cboudereau.github.io//</id><title type="html">Yet Another Geek Blog</title><subtitle>Yet Another Geek Blog : dev with fun(ction)
 </subtitle><entry><title type="html">Why we use fsharp data in prod</title><link href="https://cboudereau.github.io//fsharp/data/prod/2017/08/18/why-we-use-fsharp-data-in-prod.html" rel="alternate" type="text/html" title="Why we use fsharp data in prod" /><published>2017-08-18T13:04:00+02:00</published><updated>2017-08-18T13:04:00+02:00</updated><id>https://cboudereau.github.io//fsharp/data/prod/2017/08/18/why-we-use-fsharp-data-in-prod</id><content type="html" xml:base="https://cboudereau.github.io//fsharp/data/prod/2017/08/18/why-we-use-fsharp-data-in-prod.html">&lt;p&gt;I am currently working at a company that deal with hundreds of connectivities (apps protocol and domain adapters + big data).&lt;/p&gt;
 
 &lt;p&gt;We have since 2014 used fsharp data progressively in production (I use fsharp in prod since 2012).&lt;/p&gt;
@@ -308,6 +308,8 @@ prettyprint nodeNew
 &lt;p&gt;When the application is built, all supplied types (like the type Node in our sample) are discarded.&lt;/p&gt;
 
 &lt;p&gt;So all the abstraction is inlined by a System.Xml.Linq call. The performance is equivalent to the System.Xml.Linq version.&lt;/p&gt;
+
+&lt;p&gt;Our most verbose app that use fsharp.data exchange near 3.000.000 rq/day.&lt;/p&gt;
 
 &lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
 

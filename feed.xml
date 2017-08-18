@@ -1,18 +1,28 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.5.1">Jekyll</generator><link href="https://cboudereau.github.io//feed.xml" rel="self" type="application/atom+xml" /><link href="https://cboudereau.github.io//" rel="alternate" type="text/html" /><updated>2017-08-17T15:21:31+02:00</updated><id>https://cboudereau.github.io//</id><title type="html">Yet Another Geek Blog</title><subtitle>Yet Another Geek Blog : dev with fun(ction)
-</subtitle><entry><title type="html">Why we use fsharp data in prod</title><link href="https://cboudereau.github.io//fsharp/data/prod/2017/08/17/why-we-use-fsharp-data-in-prod.html" rel="alternate" type="text/html" title="Why we use fsharp data in prod" /><published>2017-08-17T13:04:00+02:00</published><updated>2017-08-17T13:04:00+02:00</updated><id>https://cboudereau.github.io//fsharp/data/prod/2017/08/17/why-we-use-fsharp-data-in-prod</id><content type="html" xml:base="https://cboudereau.github.io//fsharp/data/prod/2017/08/17/why-we-use-fsharp-data-in-prod.html">&lt;p&gt;Actually, I work for a company that deal with hundreds of connectivities.&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.5.1">Jekyll</generator><link href="https://cboudereau.github.io//feed.xml" rel="self" type="application/atom+xml" /><link href="https://cboudereau.github.io//" rel="alternate" type="text/html" /><updated>2017-08-18T13:36:43+02:00</updated><id>https://cboudereau.github.io//</id><title type="html">Yet Another Geek Blog</title><subtitle>Yet Another Geek Blog : dev with fun(ction)
+</subtitle><entry><title type="html">Why we use fsharp data in prod</title><link href="https://cboudereau.github.io//fsharp/data/prod/2017/08/18/why-we-use-fsharp-data-in-prod.html" rel="alternate" type="text/html" title="Why we use fsharp data in prod" /><published>2017-08-18T13:04:00+02:00</published><updated>2017-08-18T13:04:00+02:00</updated><id>https://cboudereau.github.io//fsharp/data/prod/2017/08/18/why-we-use-fsharp-data-in-prod</id><content type="html" xml:base="https://cboudereau.github.io//fsharp/data/prod/2017/08/18/why-we-use-fsharp-data-in-prod.html">&lt;p&gt;I am currently working at a company that deal with hundreds of connectivities (apps protocol and domain adapters + big data).&lt;/p&gt;
 
-&lt;p&gt;We have since 2014 used fsharp data progressively in production.&lt;/p&gt;
+&lt;p&gt;We have since 2014 used fsharp data progressively in production (I use fsharp in prod since 2012).&lt;/p&gt;
 
-&lt;p&gt;Today we have more than 10% and 1 of the top 3 (top business, high performance) in prod plus a custom big data solution in full fsharp (zmq + 7z + Azure)&lt;/p&gt;
+&lt;p&gt;Today we have more than 10% and 1 of the top 3 (top business, high performance) in prod plus a custom big data solution in full fsharp (the company guarantee in case of sales/stockout risk for exchanged data thanks to zmq + 7z + Azure)&lt;/p&gt;
 
-&lt;p&gt;We use fsharp data into different stages of a project : estimation, proof of concept, dev&lt;/p&gt;
+&lt;p&gt;We use fsharp data into different stages of a project : estimation, proof of concept, dev.&lt;/p&gt;
+
+&lt;p&gt;After 3 years of production with fsharp, I would like to serialize my experience.&lt;/p&gt;
 
 &lt;h2 id=&quot;our-context&quot;&gt;Our context&lt;/h2&gt;
 
 &lt;p&gt;A connectivity is an adapter to exchange data with a partner.
 This partner use often a “standard”. This standard &lt;a href=&quot;http://opentravel.org/#sthash.4w8LbhfH.dpbs&quot;&gt;OTA&lt;/a&gt; try to unify the communication between two partner. The bad news is : everything in OTA is optional.&lt;/p&gt;
 
+&lt;blockquote&gt;
+  &lt;p&gt;70% of our partner try to use OTA standard and others use their own protocol&lt;/p&gt;
+&lt;/blockquote&gt;
+
 &lt;p&gt;What’s the problem ?&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;The protocol is verbose (really hard to see with the key data in an editor, due to semantic issue, interval scope, …)&lt;/p&gt;
+&lt;/blockquote&gt;
 
 &lt;blockquote&gt;
   &lt;p&gt;Every partner has his own set of required and optional data.&lt;/p&gt;
@@ -33,17 +43,17 @@ This partner use often a “standard”. This standard &lt;a href=&quot;http://o
 &lt;h2 id=&quot;code-analysis-on-our-existing-apps&quot;&gt;Code analysis on our existing apps&lt;/h2&gt;
 &lt;p&gt;When I was arrived in this company, I had ran &lt;a href=&quot;http://www.ndepend.com/&quot;&gt;NDepend&lt;/a&gt; and &lt;a href=&quot;https://www.sonarqube.org/&quot;&gt;Sonar&lt;/a&gt; to see :&lt;/p&gt;
 &lt;ul&gt;
-  &lt;li&gt;how modules are dependent (visualize and navigate to the graph)&lt;/li&gt;
-  &lt;li&gt;how many lines of codes depend on a module&lt;/li&gt;
+  &lt;li&gt;how modules are dependent (visualize and navigate to the dependency graph)&lt;/li&gt;
+  &lt;li&gt;how many lines of codes depend on a module (+ the use of Resharper)&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;Each connector has around 35% of codes that use &lt;code class=&quot;highlighter-rouge&quot;&gt;System.Xml.Linq&lt;/code&gt; and 50% of tests are dedicated to serialization/deserialization part.&lt;/p&gt;
+&lt;p&gt;Each connector has approximatively 35% of codes that use &lt;code class=&quot;highlighter-rouge&quot;&gt;System.Xml.Linq&lt;/code&gt; and 50% of tests are dedicated to serialization/deserialization part (test are focussed on serialization + domain adaptation without separation).&lt;/p&gt;
 
 &lt;h2 id=&quot;maintenability&quot;&gt;Maintenability&lt;/h2&gt;
 &lt;p&gt;When we have to fix an existing app, we have to add a test, run the test and see where there was a problem.
-It is really boring and the partner will often break there compatibility.&lt;/p&gt;
+It is really boring and the partner will often break their compatibility.&lt;/p&gt;
 
-&lt;p&gt;When we build a new connector, with xml linq we have in the end a lot of method like this :&lt;/p&gt;
+&lt;p&gt;When we build a new connector with xml linq, we have in the end a lot of method like this :&lt;/p&gt;
 
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;private static Stuff BuildStuff(XDocument responseXml, XElement name)
 &lt;/code&gt;&lt;/pre&gt;
@@ -53,7 +63,7 @@ It is really boring and the partner will often break there compatibility.&lt;/p&
 
 &lt;p&gt;When I analyse this kind of code it is really hard to analyse the code without the sample and the big picture.&lt;/p&gt;
 
-&lt;p&gt;Here is an example :&lt;/p&gt;
+&lt;p&gt;Here is a xml data sample (this is not a domain dependent sample) :&lt;/p&gt;
 
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&amp;lt;node&amp;gt;
 
@@ -93,12 +103,22 @@ It is really boring and the partner will often break there compatibility.&lt;/p&
 &lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 
-&lt;p&gt;When the code is bigger you have to analyse the usage of the method to understand the context.&lt;/p&gt;
+&lt;p&gt;When the data is bigger, the number of this kind of method is also bigger you have to analyse the usage of the method to understand the context.&lt;/p&gt;
 
-&lt;p&gt;In the previous sample, the function does not return the same value depending of the context.&lt;/p&gt;
+&lt;p&gt;In the previous sample, the function does not return the same value depending of the context (because it force to use the metadata, the XElement instead of using the real data).&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;Note : I try to use xsd.exe to generate the same C# code but there is some strange partner xml that not works correctly with xsd. When it works, the generated code is really hard to update.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;in 99% our partner does not supply an xsd. This solution works only for xml and not for json&lt;/p&gt;
+&lt;/blockquote&gt;
 
 &lt;p&gt;Here is a version with the XmlProvider of &lt;a href=&quot;http://fsharp.github.io/FSharp.Data/&quot;&gt;Fsharp.Data&lt;/a&gt; :&lt;/p&gt;
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;#r @&quot;..\packages\FSharp.Data\lib\net40\FSharp.Data.dll&quot;
+#r &quot;System.Xml.Linq&quot;
+
 open FSharp.Data
 
 let [&amp;lt;Literal&amp;gt;] nodeSample = &quot;&quot;&quot;&amp;lt;node&amp;gt;
@@ -128,17 +148,35 @@ There is no ambigous context between the item and root value&lt;/p&gt;
 
 &lt;h2 id=&quot;the-friend-of-estimation&quot;&gt;The friend of estimation&lt;/h2&gt;
 
-&lt;p&gt;In our team, we analyse complexity to dispatch work by using t-shirt size scale.
-I use fsharp to build a simple fsx with our domain, the data sample of the partner in order to understand their domain (It is not only protocol but domain and business adaptation over the time intervals)
-FSharp.Data speed up the process because the porcelain and plumbing part (xml, json, … all service layer) is done by FSharp.Data and we have a better complexity feedback.
-The reason it that sometimes, the partner protocol is really verbose and it is harder to navigate into a json or xml than an instanciated object in the interactive mode).&lt;/p&gt;
+&lt;p&gt;In our team, we analyse complexity to dispatch work by using t-shirt size scale. 
+I use fsharp to build a simple fsx with our domain, the data sample of the partner in order to understand their domain (It is not only protocol but domain and business adaptation over the time intervals).&lt;/p&gt;
+
+&lt;p&gt;FSharp.Data speed up the process because the porcelain and plumbing part (xml, json, … all service layer) is done by FSharp.Data and we have a better complexity feedback.
+The reason it that sometimes the partner protocol is really verbose and it is harder to navigate into a json or xml than an instanciated object in the interactive mode.&lt;/p&gt;
 
 &lt;p&gt;Before using fsharp.data, I was a System.Xml.Linq ninja :) for estimation purpose, but for now, each time there was a verbose/complex data to understand, I first use a fsharp script.&lt;/p&gt;
 
 &lt;h2 id=&quot;flexibility&quot;&gt;Flexibility&lt;/h2&gt;
 
-&lt;p&gt;When the partner change their protocol, we have to change the adapter with the new sample and it is really hard to make a diff between 2 sample where data is completely different.
-So, we add a test like but due to the context problem, it is really hard to see if the change have same name but not the same structure and scope.&lt;/p&gt;
+&lt;p&gt;When the partner change his protocol, we have to change the adapter with the new sample and it is really hard to make a diff between 2 sample where data are completely different.
+So, we add a new test but due to the context problem, it is really hard to see if the change have same name but not the same structure and scope.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;If all test are done, there is only one test for the new protocol and other based on old protocol
+If there is a cardinality problems it is really hard to see how it impact the business part (price scope for example).&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;I prefer use fsharp because if there is a new scope (a new node for example), the code will not compile and we have to reason about the whole code.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;How to support both new and old protocol in the same app without error ?&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;We need a tool to challenge the existing code with the new protocol&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;Here is some example where fsharp data help us to increase the quality and the velocity of our process :&lt;/p&gt;
 
 &lt;p&gt;Like Xml Linq, FSharp.Data is tolerent :&lt;/p&gt;
 
@@ -147,6 +185,8 @@ So, we add a test like but due to the context problem, it is really hard to see 
 &lt;/ul&gt;
 
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;#r @&quot;..\packages\FSharp.Data\lib\net40\FSharp.Data.dll&quot;
+#r &quot;System.Xml.Linq&quot;
+
 open FSharp.Data
 
 type Node = XmlProvider&amp;lt; &quot;&quot;&quot;&amp;lt;root&amp;gt;&amp;lt;code&amp;gt;ABC&amp;lt;/code&amp;gt;&amp;lt;id&amp;gt;50&amp;lt;/id&amp;gt;&amp;lt;/root&amp;gt;&quot;&quot;&quot; &amp;gt;
@@ -156,7 +196,7 @@ let node = Node.Parse(&quot;&quot;&quot;&amp;lt;root&amp;gt;&amp;lt;code&amp;gt;
 &lt;/div&gt;
 
 &lt;blockquote&gt;
-  &lt;p&gt;Note that the parse content does not have an id element&lt;/p&gt;
+  &lt;p&gt;Note that the supplied xml to parse method does not have an id element (runtime and design time are different)&lt;/p&gt;
 &lt;/blockquote&gt;
 
 &lt;p&gt;The interactive display :&lt;/p&gt;
@@ -169,6 +209,8 @@ let node = Node.Parse(&quot;&quot;&quot;&amp;lt;root&amp;gt;&amp;lt;code&amp;gt;
 &lt;/ul&gt;
 
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;#r @&quot;..\packages\FSharp.Data\lib\net40\FSharp.Data.dll&quot;
+#r &quot;System.Xml.Linq&quot;
+
 open FSharp.Data
 
 type Node = XmlProvider&amp;lt; &quot;&quot;&quot;&amp;lt;root&amp;gt;&amp;lt;code&amp;gt;ABC&amp;lt;/code&amp;gt;&amp;lt;id&amp;gt;50&amp;lt;/id&amp;gt;&amp;lt;/root&amp;gt;&quot;&quot;&quot; &amp;gt;
@@ -184,11 +226,17 @@ printfn &quot;Id : %i&quot; (node.Id)
 &lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 
+&lt;blockquote&gt;
+  &lt;p&gt;For this case, you should consider logging this error with the associated data.&lt;/p&gt;
+&lt;/blockquote&gt;
+
 &lt;ul&gt;
-  &lt;li&gt;Breaking changes on legacy code (when a make a quick fix) :&lt;/li&gt;
+  &lt;li&gt;Breaking changes on legacy code (quick fix) :&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;#r @&quot;..\packages\FSharp.Data\lib\net40\FSharp.Data.dll&quot;
+#r &quot;System.Xml.Linq&quot;
+
 open FSharp.Data
 
 type Node = XmlProvider&amp;lt; &quot;&quot;&quot;&amp;lt;root&amp;gt;&amp;lt;code&amp;gt;ABC&amp;lt;/code&amp;gt;&amp;lt;/root&amp;gt;&quot;&quot;&quot; &amp;gt;
@@ -203,7 +251,55 @@ printfn &quot;Id : %i&quot; (node.Id)
   &lt;p&gt;Note that the required Id (used by the printfn) has been removed from the given sample&lt;/p&gt;
 &lt;/blockquote&gt;
 
-&lt;p&gt;There is an error at design time that we have to fix without adding a new unit test.&lt;/p&gt;
+&lt;p&gt;There is an error at design time that we have to fix without adding a new unit test (may be we have to adapt the code without touching test and samples if you want to support both).&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;When you have to support multiple version&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;#r @&quot;..\packages\FSharp.Data\lib\net40\FSharp.Data.dll&quot;
+#r &quot;System.Xml.Linq&quot;
+open FSharp.Data
+
+type Node = XmlProvider&amp;lt; &quot;&quot;&quot;
+&amp;lt;samples&amp;gt;
+&amp;lt;!-- version 1 --&amp;gt;
+&amp;lt;root&amp;gt;&amp;lt;code&amp;gt;ABC&amp;lt;/code&amp;gt;&amp;lt;/root&amp;gt;
+&amp;lt;!-- version 2 --&amp;gt;
+&amp;lt;root&amp;gt;&amp;lt;productcode&amp;gt;ABC&amp;lt;/productcode&amp;gt;&amp;lt;/root&amp;gt;
+
+&amp;lt;/samples&amp;gt;&quot;&quot;&quot;, SampleIsList=true &amp;gt;
+
+let toResult error = function
+    | Some x -&amp;gt; Ok x
+    | None -&amp;gt; Error error
+
+let (&amp;lt;|&amp;gt;) x y = 
+    match x with
+    | Ok x' -&amp;gt; Ok x'
+    | Error e1 -&amp;gt;
+        match y with 
+        | Ok y' -&amp;gt; Ok y'
+        | Error e2 -&amp;gt; sprintf &quot;%s\r\nor%s&quot; e1 e2 |&amp;gt; Error
+
+let prettyprint (node:Node.Root) = 
+    printfn &quot;Code : %A&quot; ((node.Code |&amp;gt; toResult &quot;expected code element&quot;) &amp;lt;|&amp;gt; (node.Productcode |&amp;gt; toResult &quot;expected Productcode element&quot;))
+
+let nodeLegacy = Node.Parse(&quot;&quot;&quot;&amp;lt;root&amp;gt;&amp;lt;code&amp;gt;ABC&amp;lt;/code&amp;gt;&amp;lt;/root&amp;gt;&quot;&quot;&quot;)
+let nodeNew = Node.Parse(&quot;&quot;&quot;&amp;lt;root&amp;gt;&amp;lt;productcode&amp;gt;ABC&amp;lt;/productcode&amp;gt;&amp;lt;/root&amp;gt;&quot;&quot;&quot;)
+
+prettyprint nodeLegacy
+prettyprint nodeNew
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;I have added the 2 versions in the samples of the XmlProvider by adding a new &lt;samples&gt; root node and the SampleIsList to true parameter. In that case, the XmlProvider skip the first element and consider many child elements to be processed.&lt;/samples&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;I have added 2 function : the toResult that add the errorMessage when the element is not present and the orElse &lt;code class=&quot;highlighter-rouge&quot;&gt;(&amp;lt;|&amp;gt;)&lt;/code&gt; function to handle the 2 versions. The prettyprint function display the result&lt;/p&gt;
+&lt;/blockquote&gt;
 
 &lt;h2 id=&quot;performance&quot;&gt;Performance&lt;/h2&gt;
 
@@ -211,7 +307,7 @@ printfn &quot;Id : %i&quot; (node.Id)
 
 &lt;p&gt;When the application is built, all supplied types (like the type Node in our sample) are discarded.&lt;/p&gt;
 
-&lt;p&gt;So all the abstraction is inline by a System.Xml.Linq call. The performance is equivalent to the System.Xml.Linq version.&lt;/p&gt;
+&lt;p&gt;So all the abstraction is inlined by a System.Xml.Linq call. The performance is equivalent to the System.Xml.Linq version.&lt;/p&gt;
 
 &lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
 
@@ -220,11 +316,13 @@ printfn &quot;Id : %i&quot; (node.Id)
   &lt;li&gt;The performance are equivalent to a hand made Xml Linq version&lt;/li&gt;
   &lt;li&gt;The estimation part is quicker because it require less xml linq plumbing&lt;/li&gt;
   &lt;li&gt;Quick fix is possible due to the move from unit test feedback to design time and compiler feedback&lt;/li&gt;
-  &lt;li&gt;There was more test around the domain of our partner and not only on the serialization/deserialization part&lt;/li&gt;
+  &lt;li&gt;There was more tests around the domain of our partner and not only on the serialization/deserialization part&lt;/li&gt;
   &lt;li&gt;I have replaced my linqpad + fiddler by fsharp script&lt;/li&gt;
-  &lt;li&gt;When the breaking changes are too high, we completelty rewrite the adapter by using fsharp and see that the LOC has half&lt;/li&gt;
+  &lt;li&gt;When the breaking changes are too high, we completely rewrite the adapter by using fsharp and see that the LOC has really decreased (near 40%)&lt;/li&gt;
   &lt;li&gt;The proof of concept code could be reused (better than extract linqpad code and import to existing + code after unit test)&lt;/li&gt;
-&lt;/ul&gt;</content><author><name></name></author><summary type="html">Actually, I work for a company that deal with hundreds of connectivities.</summary></entry><entry><title type="html">How to parse a proto3 message with FParsec</title><link href="https://cboudereau.github.io//fsharp/parser/combinator/fparsec/proto3/2017/08/10/proto3-parser.html" rel="alternate" type="text/html" title="How to parse a proto3 message with FParsec" /><published>2017-08-10T13:13:00+02:00</published><updated>2017-08-10T13:13:00+02:00</updated><id>https://cboudereau.github.io//fsharp/parser/combinator/fparsec/proto3/2017/08/10/proto3-parser</id><content type="html" xml:base="https://cboudereau.github.io//fsharp/parser/combinator/fparsec/proto3/2017/08/10/proto3-parser.html">&lt;p&gt;I would like to try &lt;a href=&quot;http://www.quanttec.com/fparsec/&quot;&gt;FParsec&lt;/a&gt; fsharp parser to parse proto3 message.&lt;/p&gt;
+  &lt;li&gt;The language ML syntax provide a better way to avoid NRE (Null Reference Exception) when you only deal with fsharp. There is Option.ofObj adapters when object came from csharp.&lt;/li&gt;
+  &lt;li&gt;We have started another experience and made our adaptation of the interval valued in full fsharp &lt;a href=&quot;https://github.com/cboudereau/Outatime&quot;&gt;Outatime&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</content><author><name></name></author><summary type="html">I am currently working at a company that deal with hundreds of connectivities (apps protocol and domain adapters + big data).</summary></entry><entry><title type="html">How to parse a proto3 message with FParsec</title><link href="https://cboudereau.github.io//fsharp/parser/combinator/fparsec/proto3/2017/08/10/proto3-parser.html" rel="alternate" type="text/html" title="How to parse a proto3 message with FParsec" /><published>2017-08-10T13:13:00+02:00</published><updated>2017-08-10T13:13:00+02:00</updated><id>https://cboudereau.github.io//fsharp/parser/combinator/fparsec/proto3/2017/08/10/proto3-parser</id><content type="html" xml:base="https://cboudereau.github.io//fsharp/parser/combinator/fparsec/proto3/2017/08/10/proto3-parser.html">&lt;p&gt;I would like to try &lt;a href=&quot;http://www.quanttec.com/fparsec/&quot;&gt;FParsec&lt;/a&gt; fsharp parser to parse proto3 message.&lt;/p&gt;
 
 &lt;p&gt;I used this &lt;a href=&quot;http://www.quanttec.com/fparsec/&quot;&gt;FParsec&lt;/a&gt; &lt;a href=&quot;http://www.quanttec.com/fparsec/tutorial.html#parsing-json&quot;&gt;tutorial&lt;/a&gt; first in order to be more familiar with this library.&lt;/p&gt;
 

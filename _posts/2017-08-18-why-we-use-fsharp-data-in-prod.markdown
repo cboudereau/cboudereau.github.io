@@ -7,7 +7,7 @@ categories: fsharp data prod
 
 I am currently working at a company that deal with hundreds of connectivities (apps protocol and domain adapters + big data). 
 
-We have since 2014 used fsharp data progressively in production (I use fsharp in prod since 2012).
+Since 2014 we have used fsharp data progressively in production (I use fsharp in prod since 2012).
 
 Today we have more than 10% and 1 of the top 3 (top business, high performance) in prod plus a custom big data solution in full fsharp (the company guarantee in case of sales/stockout risk for exchanged data thanks to zmq + 7z + Azure)
 
@@ -144,15 +144,15 @@ Before using fsharp.data, I was a System.Xml.Linq ninja :) for estimation purpos
 
 ## Flexibility
 
-When the partner change his protocol, we have to change the adapter with the new sample and it is really hard to make a diff between 2 sample where data are completely different.
-So, we add a new test but due to the context problem, it is really hard to see if the change have same name but not the same structure and scope.
+When the partner changed his protocol, we have to change the adapter with the new sample and it is really hard to make a diff between 2 samples with completely different data.
+So, we add a new test but due to the context problem, it is really hard to see if the change has same name but not the same structure and scope.
 
-> If all test are done, there is only one test for the new protocol and other based on old protocol
-> If there is a cardinality problems it is really hard to see how it impact the business part (price scope for example).
+> If all tests are done, there is only one test for the new protocol and others based on old protocol
+> If there is a cardinality problem it is really hard to see how it impacts the business part (price scope for example).
 
 I prefer use fsharp because if there is a new scope (a new node for example), the code will not compile and we have to reason about the whole code. 
 
-> How to support both new and old protocol in the same app without error ?
+> How to support both new and old protocols in the same app without error ?
 
 > We need a tool to challenge the existing code with the new protocol
 
@@ -221,7 +221,7 @@ printfn "Id : %i" (node.Id)
 
 There is an error at design time that we have to fix without adding a new unit test (may be we have to adapt the code without touching test and samples if you want to support both).
 
-- When you have to support multiple version
+- When you have to support multiple versions
 
 ```
 #r @"..\packages\FSharp.Data\lib\net40\FSharp.Data.dll"
@@ -250,7 +250,8 @@ let (<|>) x y =
         | Error e2 -> sprintf "%s\r\nor%s" e1 e2 |> Error
 
 let prettyprint (node:Node.Root) = 
-    printfn "Code : %A" ((node.Code |> toResult "expected code element") <|> (node.Productcode |> toResult "expected Productcode element"))
+    (node.Code |> toResult "expected code element") <|> (node.Productcode |> toResult "expected Productcode element")
+	|> printfn "Code : %A"
 
 let nodeLegacy = Node.Parse("""<root><code>ABC</code></root>""")
 let nodeNew = Node.Parse("""<root><productcode>ABC</productcode></root>""")
@@ -261,11 +262,11 @@ prettyprint nodeNew
 
 > I have added the 2 versions in the samples of the XmlProvider by adding a new <samples> root node and the SampleIsList to true parameter. In that case, the XmlProvider skip the first element and consider many child elements to be processed.
 
-> I have added 2 function : the toResult that add the errorMessage when the element is not present and the orElse ```(<|>)``` function to handle the 2 versions. The prettyprint function display the result
+> I have added 2 functions : the toResult that add the errorMessage when the element is not present and the orElse ```(<|>)``` function to handle the 2 versions. The prettyprint function display the result
 
 ## Performance
 
-FSharp.Data use an erased type provider, so the cost of this abstraction is paid at design time. 
+FSharp.Data uses an erased type provider, so the cost of this abstraction is paid at design time. 
 
 When the application is built, all supplied types (like the type Node in our sample) are discarded.
 
@@ -275,13 +276,13 @@ Our most verbose app that use fsharp.data exchange near 3.000.000 rq/day.
 
 ## Conclusion
 
-- We have first use a fsharp module to existing csharp apps in order to infer the partner domain
+- We have first use a fsharp module on existing csharp apps in order to infer the partner domain
 - The performance are equivalent to a hand made Xml Linq version
-- The estimation part is quicker because it require less xml linq plumbing
+- The estimation part is quicker because it requires less xml linq plumbing
 - Quick fix is possible due to the move from unit test feedback to design time and compiler feedback
 - There was more tests around the domain of our partner and not only on the serialization/deserialization part
 - I have replaced my linqpad + fiddler by fsharp script
 - When the breaking changes are too high, we completely rewrite the adapter by using fsharp and see that the LOC has really decreased (near 40%)
-- The proof of concept code could be reused (better than extract linqpad code and import to existing + code after unit test)
+- The proof of concept code could be reused (better than extracting linqpad code and import to existing + cover code build after unit test)
 - The language ML syntax provide a better way to avoid NRE (Null Reference Exception) when you only deal with fsharp. There is Option.ofObj adapters when object came from csharp.
 - We have started another experience and made our adaptation of the interval valued in full fsharp [Outatime](https://github.com/cboudereau/Outatime)

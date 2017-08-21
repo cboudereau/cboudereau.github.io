@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.5.1">Jekyll</generator><link href="https://cboudereau.github.io//feed.xml" rel="self" type="application/atom+xml" /><link href="https://cboudereau.github.io//" rel="alternate" type="text/html" /><updated>2017-08-18T13:43:20+02:00</updated><id>https://cboudereau.github.io//</id><title type="html">Yet Another Geek Blog</title><subtitle>Yet Another Geek Blog : dev with fun(ction)
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.5.1">Jekyll</generator><link href="https://cboudereau.github.io//feed.xml" rel="self" type="application/atom+xml" /><link href="https://cboudereau.github.io//" rel="alternate" type="text/html" /><updated>2017-08-21T10:13:57+02:00</updated><id>https://cboudereau.github.io//</id><title type="html">Yet Another Geek Blog</title><subtitle>Yet Another Geek Blog : dev with fun(ction)
 </subtitle><entry><title type="html">Why we use fsharp data in prod</title><link href="https://cboudereau.github.io//fsharp/data/prod/2017/08/18/why-we-use-fsharp-data-in-prod.html" rel="alternate" type="text/html" title="Why we use fsharp data in prod" /><published>2017-08-18T13:04:00+02:00</published><updated>2017-08-18T13:04:00+02:00</updated><id>https://cboudereau.github.io//fsharp/data/prod/2017/08/18/why-we-use-fsharp-data-in-prod</id><content type="html" xml:base="https://cboudereau.github.io//fsharp/data/prod/2017/08/18/why-we-use-fsharp-data-in-prod.html">&lt;p&gt;I am currently working at a company that deal with hundreds of connectivities (apps protocol and domain adapters + big data).&lt;/p&gt;
 
-&lt;p&gt;We have since 2014 used fsharp data progressively in production (I use fsharp in prod since 2012).&lt;/p&gt;
+&lt;p&gt;Since 2014 we have used fsharp data progressively in production (I use fsharp in prod since 2012).&lt;/p&gt;
 
 &lt;p&gt;Today we have more than 10% and 1 of the top 3 (top business, high performance) in prod plus a custom big data solution in full fsharp (the company guarantee in case of sales/stockout risk for exchanged data thanks to zmq + 7z + Azure)&lt;/p&gt;
 
@@ -158,18 +158,18 @@ The reason it that sometimes the partner protocol is really verbose and it is ha
 
 &lt;h2 id=&quot;flexibility&quot;&gt;Flexibility&lt;/h2&gt;
 
-&lt;p&gt;When the partner change his protocol, we have to change the adapter with the new sample and it is really hard to make a diff between 2 sample where data are completely different.
-So, we add a new test but due to the context problem, it is really hard to see if the change have same name but not the same structure and scope.&lt;/p&gt;
+&lt;p&gt;When the partner changed his protocol, we have to change the adapter with the new sample and it is really hard to make a diff between 2 samples with completely different data.
+So, we add a new test but due to the context problem, it is really hard to see if the change has same name but not the same structure and scope.&lt;/p&gt;
 
 &lt;blockquote&gt;
-  &lt;p&gt;If all test are done, there is only one test for the new protocol and other based on old protocol
-If there is a cardinality problems it is really hard to see how it impact the business part (price scope for example).&lt;/p&gt;
+  &lt;p&gt;If all tests are done, there is only one test for the new protocol and others based on old protocol
+If there is a cardinality problem it is really hard to see how it impacts the business part (price scope for example).&lt;/p&gt;
 &lt;/blockquote&gt;
 
 &lt;p&gt;I prefer use fsharp because if there is a new scope (a new node for example), the code will not compile and we have to reason about the whole code.&lt;/p&gt;
 
 &lt;blockquote&gt;
-  &lt;p&gt;How to support both new and old protocol in the same app without error ?&lt;/p&gt;
+  &lt;p&gt;How to support both new and old protocols in the same app without error ?&lt;/p&gt;
 &lt;/blockquote&gt;
 
 &lt;blockquote&gt;
@@ -254,7 +254,7 @@ printfn &quot;Id : %i&quot; (node.Id)
 &lt;p&gt;There is an error at design time that we have to fix without adding a new unit test (may be we have to adapt the code without touching test and samples if you want to support both).&lt;/p&gt;
 
 &lt;ul&gt;
-  &lt;li&gt;When you have to support multiple version&lt;/li&gt;
+  &lt;li&gt;When you have to support multiple versions&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;#r @&quot;..\packages\FSharp.Data\lib\net40\FSharp.Data.dll&quot;
@@ -283,7 +283,8 @@ let (&amp;lt;|&amp;gt;) x y =
         | Error e2 -&amp;gt; sprintf &quot;%s\r\nor%s&quot; e1 e2 |&amp;gt; Error
 
 let prettyprint (node:Node.Root) = 
-    printfn &quot;Code : %A&quot; ((node.Code |&amp;gt; toResult &quot;expected code element&quot;) &amp;lt;|&amp;gt; (node.Productcode |&amp;gt; toResult &quot;expected Productcode element&quot;))
+    (node.Code |&amp;gt; toResult &quot;expected code element&quot;) &amp;lt;|&amp;gt; (node.Productcode |&amp;gt; toResult &quot;expected Productcode element&quot;)
+	|&amp;gt; printfn &quot;Code : %A&quot;
 
 let nodeLegacy = Node.Parse(&quot;&quot;&quot;&amp;lt;root&amp;gt;&amp;lt;code&amp;gt;ABC&amp;lt;/code&amp;gt;&amp;lt;/root&amp;gt;&quot;&quot;&quot;)
 let nodeNew = Node.Parse(&quot;&quot;&quot;&amp;lt;root&amp;gt;&amp;lt;productcode&amp;gt;ABC&amp;lt;/productcode&amp;gt;&amp;lt;/root&amp;gt;&quot;&quot;&quot;)
@@ -298,12 +299,12 @@ prettyprint nodeNew
 &lt;/blockquote&gt;
 
 &lt;blockquote&gt;
-  &lt;p&gt;I have added 2 function : the toResult that add the errorMessage when the element is not present and the orElse &lt;code class=&quot;highlighter-rouge&quot;&gt;(&amp;lt;|&amp;gt;)&lt;/code&gt; function to handle the 2 versions. The prettyprint function display the result&lt;/p&gt;
+  &lt;p&gt;I have added 2 functions : the toResult that add the errorMessage when the element is not present and the orElse &lt;code class=&quot;highlighter-rouge&quot;&gt;(&amp;lt;|&amp;gt;)&lt;/code&gt; function to handle the 2 versions. The prettyprint function display the result&lt;/p&gt;
 &lt;/blockquote&gt;
 
 &lt;h2 id=&quot;performance&quot;&gt;Performance&lt;/h2&gt;
 
-&lt;p&gt;FSharp.Data use an erased type provider, so the cost of this abstraction is paid at design time.&lt;/p&gt;
+&lt;p&gt;FSharp.Data uses an erased type provider, so the cost of this abstraction is paid at design time.&lt;/p&gt;
 
 &lt;p&gt;When the application is built, all supplied types (like the type Node in our sample) are discarded.&lt;/p&gt;
 
@@ -314,14 +315,14 @@ prettyprint nodeNew
 &lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
 
 &lt;ul&gt;
-  &lt;li&gt;We have first use a fsharp module to existing csharp apps in order to infer the partner domain&lt;/li&gt;
+  &lt;li&gt;We have first use a fsharp module on existing csharp apps in order to infer the partner domain&lt;/li&gt;
   &lt;li&gt;The performance are equivalent to a hand made Xml Linq version&lt;/li&gt;
-  &lt;li&gt;The estimation part is quicker because it require less xml linq plumbing&lt;/li&gt;
+  &lt;li&gt;The estimation part is quicker because it requires less xml linq plumbing&lt;/li&gt;
   &lt;li&gt;Quick fix is possible due to the move from unit test feedback to design time and compiler feedback&lt;/li&gt;
   &lt;li&gt;There was more tests around the domain of our partner and not only on the serialization/deserialization part&lt;/li&gt;
   &lt;li&gt;I have replaced my linqpad + fiddler by fsharp script&lt;/li&gt;
   &lt;li&gt;When the breaking changes are too high, we completely rewrite the adapter by using fsharp and see that the LOC has really decreased (near 40%)&lt;/li&gt;
-  &lt;li&gt;The proof of concept code could be reused (better than extract linqpad code and import to existing + code after unit test)&lt;/li&gt;
+  &lt;li&gt;The proof of concept code could be reused (better than extracting linqpad code and import to existing + cover code build after unit test)&lt;/li&gt;
   &lt;li&gt;The language ML syntax provide a better way to avoid NRE (Null Reference Exception) when you only deal with fsharp. There is Option.ofObj adapters when object came from csharp.&lt;/li&gt;
   &lt;li&gt;We have started another experience and made our adaptation of the interval valued in full fsharp &lt;a href=&quot;https://github.com/cboudereau/Outatime&quot;&gt;Outatime&lt;/a&gt;&lt;/li&gt;
 &lt;/ul&gt;</content><author><name></name></author><summary type="html">I am currently working at a company that deal with hundreds of connectivities (apps protocol and domain adapters + big data).</summary></entry><entry><title type="html">How to parse a proto3 message with FParsec</title><link href="https://cboudereau.github.io//fsharp/parser/combinator/fparsec/proto3/2017/08/10/proto3-parser.html" rel="alternate" type="text/html" title="How to parse a proto3 message with FParsec" /><published>2017-08-10T13:13:00+02:00</published><updated>2017-08-10T13:13:00+02:00</updated><id>https://cboudereau.github.io//fsharp/parser/combinator/fparsec/proto3/2017/08/10/proto3-parser</id><content type="html" xml:base="https://cboudereau.github.io//fsharp/parser/combinator/fparsec/proto3/2017/08/10/proto3-parser.html">&lt;p&gt;I would like to try &lt;a href=&quot;http://www.quanttec.com/fparsec/&quot;&gt;FParsec&lt;/a&gt; fsharp parser to parse proto3 message.&lt;/p&gt;

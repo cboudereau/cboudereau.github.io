@@ -82,7 +82,7 @@
   <div class="post-content" itemprop="articleBody">
     <p>I am currently working at a company that deal with hundreds of connectivities (apps protocol and domain adapters + big data).</p>
 
-<p>We have since 2014 used fsharp data progressively in production (I use fsharp in prod since 2012).</p>
+<p>Since 2014 we have used fsharp data progressively in production (I use fsharp in prod since 2012).</p>
 
 <p>Today we have more than 10% and 1 of the top 3 (top business, high performance) in prod plus a custom big data solution in full fsharp (the company guarantee in case of sales/stockout risk for exchanged data thanks to zmq + 7z + Azure)</p>
 
@@ -239,18 +239,18 @@ The reason it that sometimes the partner protocol is really verbose and it is ha
 
 <h2 id="flexibility">Flexibility</h2>
 
-<p>When the partner change his protocol, we have to change the adapter with the new sample and it is really hard to make a diff between 2 sample where data are completely different.
-So, we add a new test but due to the context problem, it is really hard to see if the change have same name but not the same structure and scope.</p>
+<p>When the partner changed his protocol, we have to change the adapter with the new sample and it is really hard to make a diff between 2 samples with completely different data.
+So, we add a new test but due to the context problem, it is really hard to see if the change has same name but not the same structure and scope.</p>
 
 <blockquote>
-  <p>If all test are done, there is only one test for the new protocol and other based on old protocol
-If there is a cardinality problems it is really hard to see how it impact the business part (price scope for example).</p>
+  <p>If all tests are done, there is only one test for the new protocol and others based on old protocol
+If there is a cardinality problem it is really hard to see how it impacts the business part (price scope for example).</p>
 </blockquote>
 
 <p>I prefer use fsharp because if there is a new scope (a new node for example), the code will not compile and we have to reason about the whole code.</p>
 
 <blockquote>
-  <p>How to support both new and old protocol in the same app without error ?</p>
+  <p>How to support both new and old protocols in the same app without error ?</p>
 </blockquote>
 
 <blockquote>
@@ -335,7 +335,7 @@ printfn "Id : %i" (node.Id)
 <p>There is an error at design time that we have to fix without adding a new unit test (may be we have to adapt the code without touching test and samples if you want to support both).</p>
 
 <ul>
-  <li>When you have to support multiple version</li>
+  <li>When you have to support multiple versions</li>
 </ul>
 
 <div class="highlighter-rouge"><pre class="highlight"><code>#r @"..\packages\FSharp.Data\lib\net40\FSharp.Data.dll"
@@ -364,7 +364,8 @@ let (&lt;|&gt;) x y =
         | Error e2 -&gt; sprintf "%s\r\nor%s" e1 e2 |&gt; Error
 
 let prettyprint (node:Node.Root) = 
-    printfn "Code : %A" ((node.Code |&gt; toResult "expected code element") &lt;|&gt; (node.Productcode |&gt; toResult "expected Productcode element"))
+    (node.Code |&gt; toResult "expected code element") &lt;|&gt; (node.Productcode |&gt; toResult "expected Productcode element")
+	|&gt; printfn "Code : %A"
 
 let nodeLegacy = Node.Parse("""&lt;root&gt;&lt;code&gt;ABC&lt;/code&gt;&lt;/root&gt;""")
 let nodeNew = Node.Parse("""&lt;root&gt;&lt;productcode&gt;ABC&lt;/productcode&gt;&lt;/root&gt;""")
@@ -379,12 +380,12 @@ prettyprint nodeNew
 </blockquote>
 
 <blockquote>
-  <p>I have added 2 function : the toResult that add the errorMessage when the element is not present and the orElse <code class="highlighter-rouge">(&lt;|&gt;)</code> function to handle the 2 versions. The prettyprint function display the result</p>
+  <p>I have added 2 functions : the toResult that add the errorMessage when the element is not present and the orElse <code class="highlighter-rouge">(&lt;|&gt;)</code> function to handle the 2 versions. The prettyprint function display the result</p>
 </blockquote>
 
 <h2 id="performance">Performance</h2>
 
-<p>FSharp.Data use an erased type provider, so the cost of this abstraction is paid at design time.</p>
+<p>FSharp.Data uses an erased type provider, so the cost of this abstraction is paid at design time.</p>
 
 <p>When the application is built, all supplied types (like the type Node in our sample) are discarded.</p>
 
@@ -395,14 +396,14 @@ prettyprint nodeNew
 <h2 id="conclusion">Conclusion</h2>
 
 <ul>
-  <li>We have first use a fsharp module to existing csharp apps in order to infer the partner domain</li>
+  <li>We have first use a fsharp module on existing csharp apps in order to infer the partner domain</li>
   <li>The performance are equivalent to a hand made Xml Linq version</li>
-  <li>The estimation part is quicker because it require less xml linq plumbing</li>
+  <li>The estimation part is quicker because it requires less xml linq plumbing</li>
   <li>Quick fix is possible due to the move from unit test feedback to design time and compiler feedback</li>
   <li>There was more tests around the domain of our partner and not only on the serialization/deserialization part</li>
   <li>I have replaced my linqpad + fiddler by fsharp script</li>
   <li>When the breaking changes are too high, we completely rewrite the adapter by using fsharp and see that the LOC has really decreased (near 40%)</li>
-  <li>The proof of concept code could be reused (better than extract linqpad code and import to existing + code after unit test)</li>
+  <li>The proof of concept code could be reused (better than extracting linqpad code and import to existing + cover code build after unit test)</li>
   <li>The language ML syntax provide a better way to avoid NRE (Null Reference Exception) when you only deal with fsharp. There is Option.ofObj adapters when object came from csharp.</li>
   <li>We have started another experience and made our adaptation of the interval valued in full fsharp <a href="https://github.com/cboudereau/Outatime">Outatime</a></li>
 </ul>

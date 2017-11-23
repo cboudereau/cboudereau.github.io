@@ -77,7 +77,7 @@ val it : unit = ()
 
 ## Conclusion
 - As a QA, if you have constantly false negative, try to use alpha test before pushing the code.
-- Alpha test, reduce the time to fix the problem by reducing the test time.
+- Alpha test, reduces the time to fix the problem by executing the impacted code part and checking step by step that everything is ok (REPL style).
 - Alpha test driven dev is ok for not valuable automated test (the check is too complex or the cost is too high).
 - If you are a .Net QA, try to use fsharp in place of existing codebase (ie : the setup/teardown part).
 - The flow to produce scripts is more efficient by always checking that the code is working.

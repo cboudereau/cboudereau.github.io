@@ -62,7 +62,7 @@ For this kind of function calling them directly and run it into an interactive i
 hello "QA"
 ```
 
-It is realyy easy to press Alt+Enter and check that the function display hello QA!
+It is realy easy to press Alt+Enter and check that the function display hello QA!
 
 Here is what the interactive displays : 
 

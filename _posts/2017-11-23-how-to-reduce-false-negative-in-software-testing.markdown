@@ -8,7 +8,7 @@ categories: fsharp qa scripting
 As a QA, you have to write/maintain some code in order to automate your activities.
 This activity is the same dev activity but... How do you test your code ?
 
-![Inception]({{ "/images/inception.jpg" | absolute_url }})
+![Inception]({{ "/images/inception.jpg" }})
 
 ## Use the write tools
 

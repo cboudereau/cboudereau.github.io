@@ -1,5 +1,79 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.5.1">Jekyll</generator><link href="https://cboudereau.github.io//feed.xml" rel="self" type="application/atom+xml" /><link href="https://cboudereau.github.io//" rel="alternate" type="text/html" /><updated>2017-08-21T10:13:57+02:00</updated><id>https://cboudereau.github.io//</id><title type="html">Yet Another Geek Blog</title><subtitle>Yet Another Geek Blog : dev with fun(ction)
-</subtitle><entry><title type="html">Why we use fsharp data in prod</title><link href="https://cboudereau.github.io//fsharp/data/prod/2017/08/18/why-we-use-fsharp-data-in-prod.html" rel="alternate" type="text/html" title="Why we use fsharp data in prod" /><published>2017-08-18T13:04:00+02:00</published><updated>2017-08-18T13:04:00+02:00</updated><id>https://cboudereau.github.io//fsharp/data/prod/2017/08/18/why-we-use-fsharp-data-in-prod</id><content type="html" xml:base="https://cboudereau.github.io//fsharp/data/prod/2017/08/18/why-we-use-fsharp-data-in-prod.html">&lt;p&gt;I am currently working at a company that deal with hundreds of connectivities (apps protocol and domain adapters + big data).&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.5.1">Jekyll</generator><link href="http://localhost:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://localhost:4000/" rel="alternate" type="text/html" /><updated>2017-11-23T17:27:13+01:00</updated><id>http://localhost:4000/</id><title type="html">Yet Another Geek Blog</title><subtitle>Yet Another Geek Blog : dev with fun(ction)
+</subtitle><entry><title type="html">How to reduce false negative in software testing!</title><link href="http://localhost:4000/fsharp/qa/scripting/2017/11/23/how-to-reduce-false-negative-in-software-testing.html" rel="alternate" type="text/html" title="How to reduce false negative in software testing!" /><published>2017-11-23T12:04:00+01:00</published><updated>2017-11-23T12:04:00+01:00</updated><id>http://localhost:4000/fsharp/qa/scripting/2017/11/23/how-to-reduce-false-negative-in-software-testing</id><content type="html" xml:base="http://localhost:4000/fsharp/qa/scripting/2017/11/23/how-to-reduce-false-negative-in-software-testing.html">&lt;p&gt;As a QA, you have to write/maintain some code in order to automate your activities.
+This activity is the same dev activity but… How do you test your code ?&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://localhost:4000/images/inception.jpg&quot; alt=&quot;Inception&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;use-the-write-tools&quot;&gt;Use the write tools&lt;/h2&gt;
+
+&lt;p&gt;Even if you use a tool, you have to integrate it to the existing QA environment. So you have to write code.
+Some QA teams builds a real app, libraries or exe.&lt;/p&gt;
+
+&lt;p&gt;If you build a library, consider this activity like a dev and make unit test/build/ci.&lt;/p&gt;
+
+&lt;p&gt;If you make an exe you are into the wrong path! If you do that you also need a QA!&lt;/p&gt;
+
+&lt;h2 id=&quot;qa-of-qa-whats-wrong-&quot;&gt;QA of QA! What’s wrong ??&lt;/h2&gt;
+&lt;p&gt;The QA of QA comes when you have a codebase that evolves and produces false negative.
+For example, your campaign is failing because you have introduced a bug into you setup script or whatever. 
+This business part is not tested and should not be tested!&lt;/p&gt;
+
+&lt;p&gt;If the code is reusable and technical, it’s ok to build a library (ie:scrapping lib, xml utils, …)&lt;/p&gt;
+
+&lt;p&gt;What about plumbing part like setup/teardown functions ?
+Generally this sort of code is hard to maintain and you have to run the entire test.
+Running constantly the entire test to fix the setup/teardown part is wasting time! 
+This kind of tests could ran into 10 or 30s (or even higher) and because they are too long you loose the focus of the last problem. 
+So the number of iterations is higher than fixing a codebase with a little test.
+Associated unit tests are hard to produce because it is side effect functions like executing sql query or enabling queue logging.
+If you have this problem, try to use alpha test.&lt;/p&gt;
+
+&lt;p&gt;An alpha test is a little test built by the developper in order to check a very little part (not the whole QA test but one step of the setup/teardown part).
+This test must be easy to write and easy to check.&lt;/p&gt;
+
+&lt;h2 id=&quot;how-do-you-run-alpha-test-from-existing-code-base-&quot;&gt;How do you run alpha test from existing code base ?&lt;/h2&gt;
+&lt;p&gt;First of all, you have to use a language having scripting and REPL properties like fsharp.
+In my experience, our QA team uses a csharp solution with specflow but there were no tests on the setup and teardown part.
+Sometimes they have false negative due to regression on the setup/teardown part. After understanding the problem, the queue logging part was not ok.
+The problem was too complex to fix into the existing codebase, so we have used the divide and conquer principle!&lt;/p&gt;
+
+&lt;p&gt;First we have extracted the code that activate the logging part into a fsharp script.
+Side effects are often hard to check so we used alpha testing by calling the fsharp func making the side effects and checked that the log was activated.
+Thanks to fsharp and its REPL + scripting properties executing a part of the setup/teardown is easier than the previous one plus the flow to produce the code force the QA dev to build very little function that do one thing at a time and packaging them into modules.&lt;/p&gt;
+
+&lt;p&gt;Here is for example hard code to test :&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let hello = printfn &quot;hello %s&quot;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;You can say that testing the StandardOuput is ok, but you have to add a lots of plumbing into your code to have the benefits.
+For this kind of function calling them directly and runnning into an interactive is very easy because only one test is ok to check the effect.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;hello &quot;QA&quot;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;It is very every to press Alt+Enter and check that the function display hello QA!&lt;/p&gt;
+
+&lt;p&gt;Here is what the interactive displays :&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;val hello : (string -&amp;gt; unit)
+
+&amp;gt;
+&amp;gt;
+hello QA
+val it : unit = ()
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
+&lt;ul&gt;
+  &lt;li&gt;As a QA, if you have constantly false negative, try to use alpha test before pushing the code.&lt;/li&gt;
+  &lt;li&gt;Alpha test, reduce the time to fix the problem by reducing the test time.&lt;/li&gt;
+  &lt;li&gt;Alpha test driven dev it is ok for not valuable automated test (the check is too complicated or the cost is too high).&lt;/li&gt;
+  &lt;li&gt;If you are a .Net QA, try to use fsharp in place of existing codebase (ie : the setup/teardown part).&lt;/li&gt;
+  &lt;li&gt;The flow to produce scripts is more efficient by always checking that the code is working.&lt;/li&gt;
+&lt;/ul&gt;</content><author><name></name></author><summary type="html">As a QA, you have to write/maintain some code in order to automate your activities. This activity is the same dev activity but… How do you test your code ?</summary></entry><entry><title type="html">Why we use fsharp data in prod</title><link href="http://localhost:4000/fsharp/data/prod/2017/08/18/why-we-use-fsharp-data-in-prod.html" rel="alternate" type="text/html" title="Why we use fsharp data in prod" /><published>2017-08-18T13:04:00+02:00</published><updated>2017-08-18T13:04:00+02:00</updated><id>http://localhost:4000/fsharp/data/prod/2017/08/18/why-we-use-fsharp-data-in-prod</id><content type="html" xml:base="http://localhost:4000/fsharp/data/prod/2017/08/18/why-we-use-fsharp-data-in-prod.html">&lt;p&gt;I am currently working at a company that deal with hundreds of connectivities (apps protocol and domain adapters + big data).&lt;/p&gt;
 
 &lt;p&gt;Since 2014 we have used fsharp data progressively in production (I use fsharp in prod since 2012).&lt;/p&gt;
 
@@ -325,7 +399,7 @@ prettyprint nodeNew
   &lt;li&gt;The proof of concept code could be reused (better than extracting linqpad code and import to existing + cover code build after unit test)&lt;/li&gt;
   &lt;li&gt;The language ML syntax provide a better way to avoid NRE (Null Reference Exception) when you only deal with fsharp. There is Option.ofObj adapters when object came from csharp.&lt;/li&gt;
   &lt;li&gt;We have started another experience and made our adaptation of the interval valued in full fsharp &lt;a href=&quot;https://github.com/cboudereau/Outatime&quot;&gt;Outatime&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;</content><author><name></name></author><summary type="html">I am currently working at a company that deal with hundreds of connectivities (apps protocol and domain adapters + big data).</summary></entry><entry><title type="html">How to parse a proto3 message with FParsec</title><link href="https://cboudereau.github.io//fsharp/parser/combinator/fparsec/proto3/2017/08/10/proto3-parser.html" rel="alternate" type="text/html" title="How to parse a proto3 message with FParsec" /><published>2017-08-10T13:13:00+02:00</published><updated>2017-08-10T13:13:00+02:00</updated><id>https://cboudereau.github.io//fsharp/parser/combinator/fparsec/proto3/2017/08/10/proto3-parser</id><content type="html" xml:base="https://cboudereau.github.io//fsharp/parser/combinator/fparsec/proto3/2017/08/10/proto3-parser.html">&lt;p&gt;I would like to try &lt;a href=&quot;http://www.quanttec.com/fparsec/&quot;&gt;FParsec&lt;/a&gt; fsharp parser to parse proto3 message.&lt;/p&gt;
+&lt;/ul&gt;</content><author><name></name></author><summary type="html">I am currently working at a company that deal with hundreds of connectivities (apps protocol and domain adapters + big data).</summary></entry><entry><title type="html">How to parse a proto3 message with FParsec</title><link href="http://localhost:4000/fsharp/parser/combinator/fparsec/proto3/2017/08/10/proto3-parser.html" rel="alternate" type="text/html" title="How to parse a proto3 message with FParsec" /><published>2017-08-10T13:13:00+02:00</published><updated>2017-08-10T13:13:00+02:00</updated><id>http://localhost:4000/fsharp/parser/combinator/fparsec/proto3/2017/08/10/proto3-parser</id><content type="html" xml:base="http://localhost:4000/fsharp/parser/combinator/fparsec/proto3/2017/08/10/proto3-parser.html">&lt;p&gt;I would like to try &lt;a href=&quot;http://www.quanttec.com/fparsec/&quot;&gt;FParsec&lt;/a&gt; fsharp parser to parse proto3 message.&lt;/p&gt;
 
 &lt;p&gt;I used this &lt;a href=&quot;http://www.quanttec.com/fparsec/&quot;&gt;FParsec&lt;/a&gt; &lt;a href=&quot;http://www.quanttec.com/fparsec/tutorial.html#parsing-json&quot;&gt;tutorial&lt;/a&gt; first in order to be more familiar with this library.&lt;/p&gt;
 
@@ -668,7 +742,7 @@ run pProtos &quot;&quot;&quot;
 &lt;/div&gt;
 
 &lt;p&gt;Finally, we see step by step how to deal with FParsec to build and compose parser together by building a full proto message parser.
-This parser could be composed with an enum parser. The enum parser could reuse the internal message parser, and so on…&lt;/p&gt;</content><author><name></name></author><summary type="html">I would like to try FParsec fsharp parser to parse proto3 message.</summary></entry><entry><title type="html">Parser Combinator in real life</title><link href="https://cboudereau.github.io//fsharp,/parser/combinator/2017/08/09/why-parser.html" rel="alternate" type="text/html" title="Parser Combinator in real life" /><published>2017-08-09T13:14:01+02:00</published><updated>2017-08-09T13:14:01+02:00</updated><id>https://cboudereau.github.io//fsharp,/parser/combinator/2017/08/09/why-parser</id><content type="html" xml:base="https://cboudereau.github.io//fsharp,/parser/combinator/2017/08/09/why-parser.html">&lt;p&gt;I had to write an application that handle 2200 msg per second. 
+This parser could be composed with an enum parser. The enum parser could reuse the internal message parser, and so on…&lt;/p&gt;</content><author><name></name></author><summary type="html">I would like to try FParsec fsharp parser to parse proto3 message.</summary></entry><entry><title type="html">Parser Combinator in real life</title><link href="http://localhost:4000/fsharp,/parser/combinator/2017/08/09/why-parser.html" rel="alternate" type="text/html" title="Parser Combinator in real life" /><published>2017-08-09T13:14:01+02:00</published><updated>2017-08-09T13:14:01+02:00</updated><id>http://localhost:4000/fsharp,/parser/combinator/2017/08/09/why-parser</id><content type="html" xml:base="http://localhost:4000/fsharp,/parser/combinator/2017/08/09/why-parser.html">&lt;p&gt;I had to write an application that handle 2200 msg per second. 
 This application consist of indexing and compress data with 7z.&lt;/p&gt;
 
 &lt;blockquote&gt;

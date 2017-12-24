@@ -11,6 +11,14 @@ Sketchup for dummies! For dummies ? Don't be shy and try the experience thanks t
 
 ![Sketchup for dummies]({{ "/images/sketchup-for-dummies.jpg" }})
 
+## The friend of dreams!
+
+I often use Sketchup for buildings purpose. I plan my works and build scaled plqn to check the requirements but if you are a geek like me, You want a realistic model like this : 
+
+![Model of my futur room]({{ "/images/Scene 1_night.jpg" }})
+
+But before you make your dreams or your plan, be prepared!
+
 ## When and why read this books
 
 Firstly, Sketchup is easy to use thanks youtube channels but when you want to build more complex things, you have to find a solution and it is too late. Too late to create component and understand how to compose and build parts together and having a maintanable and extensible model.

@@ -13,7 +13,7 @@ Sketchup for dummies! For dummies ? Don't be shy and try the experience thanks t
 
 ## The friend of dreams!
 
-I often use Sketchup for buildings purpose. I plan my works and build scaled plqn to check the requirements but if you are a geek like me, You want a realistic model like this : 
+I often use Sketchup for buildings purpose. I plan my works and build scaled plan to check the requirements but if you are a geek like me, You want a realistic model like this : 
 
 ![Model of my futur room]({{ "/images/Scene 1_night.jpg" }})
 

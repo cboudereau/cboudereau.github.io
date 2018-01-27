@@ -4,6 +4,7 @@ title:  "Why we use fsharp data in prod"
 date:   2017-08-18 13:04:00 +0200
 categories: fsharp data prod
 image: "/images/fsharpdata.jpg"
+comments: true
 ---
 
 I am currently working at a company that deal with hundreds of connectivities (apps protocol and domain adapters + big data). 

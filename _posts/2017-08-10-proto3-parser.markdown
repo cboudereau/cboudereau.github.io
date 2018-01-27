@@ -3,6 +3,7 @@ layout: post
 title:  "How to parse a proto3 message with FParsec"
 date:   2017-08-10 13:13:00 +0200
 categories: fsharp parser combinator fparsec proto3
+comments: true
 ---
 
 I would like to try [FParsec](http://www.quanttec.com/fparsec/) fsharp parser to parse proto3 message.

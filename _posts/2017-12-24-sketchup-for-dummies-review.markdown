@@ -4,6 +4,7 @@ title:  "[Books] Sketchup for dummies review"
 date:   2017-12-24 12:29:00 +0100
 categories: 3d books learning
 image: "/images/sketchup-for-dummies_thumbs.jpg"
+comments: true
 ---
 
 Sketchup is easy to use but to mastering it and creating wonderfull things you need some help.

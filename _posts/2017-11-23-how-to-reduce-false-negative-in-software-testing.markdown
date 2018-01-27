@@ -4,6 +4,7 @@ title:  "How to reduce false negative in software testing!"
 date:   2017-11-23 13:04:00 +0200
 categories: fsharp qa scripting
 image: "/images/inception.jpg"
+comments: true
 ---
 
 As a QA, you have to write/maintain some code in order to automate your activities.

@@ -10,7 +10,7 @@ comments: true
 As a QA, you have to write/maintain some code in order to automate your activities.
 This activity is the same dev activity but... How do you test your code ?
 
-## Use the write tools
+## Use the right tools
 
 Even if you use a tool, you have to integrate it to the existing QA environment. So you have to write code.
 Some QA teams builds a real app, libraries or exe.

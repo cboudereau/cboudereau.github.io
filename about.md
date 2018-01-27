@@ -4,6 +4,8 @@ title: About
 permalink: /about/
 ---
 
+<span class="image left"><img src="{{ "/images/20151127_214320.jpg" | absolute_url }}" alt="" /></span>
+
 Hello!
 
 Thanks for visiting! I am Clement Boudereau, I write code since 2001 and professionally since 2004.

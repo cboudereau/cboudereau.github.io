@@ -3,12 +3,11 @@ layout: post
 title:  "How to reduce false negative in software testing!"
 date:   2017-11-23 13:04:00 +0200
 categories: fsharp qa scripting
+image: "/images/inception.jpg"
 ---
 
 As a QA, you have to write/maintain some code in order to automate your activities.
 This activity is the same dev activity but... How do you test your code ?
-
-![Inception]({{ "/images/inception.jpg" }})
 
 ## Use the write tools
 

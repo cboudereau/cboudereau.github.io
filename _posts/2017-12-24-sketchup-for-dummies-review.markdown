@@ -3,15 +3,15 @@ layout: post
 title:  "[Books] Sketchup for dummies review"
 date:   2017-12-24 12:29:00 +0100
 categories: 3d books learning
+image: "/images/sketchup-for-dummies_thumbs.jpg"
 ---
 
 Sketchup is easy to use but to mastering it and creating wonderfull things you need some help.
-
 Sketchup for dummies! For dummies ? Don't be shy and try the experience thanks to [Rebecca Huehls](https://twitter.com/rebeccahuehls/)
 
 ![Sketchup for dummies]({{ "/images/sketchup-for-dummies.jpg" }})
 
-## The friend of dreams!
+## The friend of your dreams!
 
 I often use Sketchup for buildings purpose. I plan my works and build scaled plan to check the requirements but if you are a geek like me, You want a realistic model like this : 
 

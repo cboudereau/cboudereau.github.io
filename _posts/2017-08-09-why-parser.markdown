@@ -3,7 +3,9 @@ layout: post
 title:  "Parser Combinator in real life"
 date:   2017-08-09 13:14:01 +0200
 categories: fsharp, parser combinator
+image: "/images/parsercombinator.png"
 ---
+
 I had to write an application that handle 2200 msg per second. 
 This application consist of indexing and compress data with 7z.
 

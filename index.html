@@ -1,0 +1,99 @@
+---
+layout: null
+title: YAGB - Home Page
+description: Every great website starts with a great homepage. The homepage tells your viewers what your site is all about and gives your viewers a place to come back to.
+sitemap:
+    priority: 1.0
+    lastmod: 2018-01-27
+    changefreq: weekly
+---
+<!DOCTYPE HTML>
+<!--
+	Massively by HTML5 UP
+	html5up.net | @ajlkn
+  Jekyll integration by somiibo.com
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+    {% include head.html %}
+
+
+	</head>
+	<body class="is-loading">
+
+		<!-- Wrapper -->
+			<div id="wrapper" class="fade-in">
+
+				<!-- Intro -->
+					<div id="intro">
+            <h1>{{site.title}}</h1>
+						<h2>A blog about experiments and feedback of a passionate and fun developer</h2>
+						<p>By <a href="https://twitter.com/cboudereau">@cboudereau</a></p>
+						<ul class="actions">
+							<li><a href="#header" class="button icon solo fa-arrow-down scrolly">Continue</a></li>
+						</ul>
+					</div>
+
+				<!-- Header -->
+					<header id="header">
+						<a href="{{ "/" | absolute_url }}" class="logo">{{site.title}}</a>
+					</header>
+
+				<!-- Nav -->
+					<nav id="nav">
+
+            {% include nav.html %}
+
+						<ul class="icons">
+              <li><a href="https://twitter.com/{{site.twitter}}" class="icon fa-twitter" rel="nofollow"><span class="label">Twitter</span></a></li>
+              <li><a href="https://github.com/{{site.github}}" class="icon fa-github" rel="nofollow"><span class="label">GitHub</span></a></li>
+              <li><a href="https://3dwarehouse.sketchup.com/user/{{site.3dwarehouse}}" class="icon" rel="nofollow"><img style="display: block" src="{{ "/images/su-logo-grid.png" | absolute_url }}" | absolute_url }}" " width="20px" height="20px" alt="3dwarehouse"></img></a></li>
+						</ul>
+					</nav>
+
+				<!-- Main -->
+					<div id="main">
+						<!-- Posts -->
+							<section class="posts">
+                {% for post in paginator.posts %}
+                {% assign mod3 = forloop.index | modulo: 3 %}
+  								<article>
+  									<header>
+  										<span class="date">{{ post.date | date_to_string }}</span>
+  										<h2><a href="{{ post.url | absolute_url }}">{{ post.title }}</h2>
+  									</header>
+  									<a href="{{ post.url | absolute_url }}" class="image fit"><img src="{{ post.image | absolute_url }}" alt="" /></a>
+  									<p>{{ post.excerpt }}</p>
+  									<ul class="actions">
+  										<li><a href="{{ post.url | absolute_url }}" class="button">Full Story</a></li>
+  									</ul>
+  								</article>
+                {% endfor %}
+
+							</section>
+
+					</div>
+
+			</div>
+			<footer id="footer">
+					   <!-- Pagination links -->
+		<div class="pagination">
+                 {% if paginator.previous_page %}
+                 <a href="{{ paginator.previous_page_path }}" class="previous">Previous</a>
+                 {% else %}
+                 <span class="previous">Previous</span>
+                 {% endif %}
+                 <span class="page_number ">Page: {{ paginator.page }} of {{ paginator.total_pages }}</span>
+                 {% if paginator.next_page %}
+                 <a href="{{ paginator.next_page_path }}" class="next">Next</a>
+                 {% else %}
+                 <span class="next ">Next</span>
+                 {% endif %}
+        </div></footer>
+              
+		<!-- Scripts -->
+		{% include scripts-main.html %}
+
+	</body>
+</html>

@@ -3,6 +3,7 @@ layout: post
 title:  "Why we use fsharp data in prod"
 date:   2017-08-18 13:04:00 +0200
 categories: fsharp data prod
+image: "/images/fsharpdata.jpg"
 ---
 
 I am currently working at a company that deal with hundreds of connectivities (apps protocol and domain adapters + big data). 
@@ -25,13 +26,9 @@ This partner use often a "standard". This standard [OTA](http://opentravel.org/#
 What's the problem ?
 
 > The protocol is verbose (really hard to see with the key data in an editor, due to semantic issue, interval scope, ...)
-
 > Every partner has his own set of required and optional data.
-
 > Values are defined on an interval (another post could be dedicated to this part) and each partner has his own interval valued scope
-
 > Some partner does not use OTA anymore or they don't know that OTA exists (due to historical reason, ...)
-
 > Even if the partner has a poor interface, we have to integrate it has quick as possible
 
 ## Code analysis on our existing apps

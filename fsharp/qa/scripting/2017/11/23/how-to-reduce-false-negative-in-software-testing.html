@@ -1,0 +1,196 @@
+<!DOCTYPE HTML>
+<!--
+	Massively by HTML5 UP
+	html5up.net | @ajlkn
+  Jekyll integration by somiibo.com
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+--><html>
+	<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+<title>How to reduce false negative in software testing!</title>
+<meta name="description" content="">
+
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/icon/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/icon/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/icon/favicon-16x16.png">
+<link rel="manifest" href="/assets/icon/manifest.json">
+<link rel="mask-icon" href="/assets/icon/safari-pinned-tab.svg" color="#5bbad5">
+<link rel="shortcut icon" href="/assets/icon/favicon.ico">
+<meta name="msapplication-config" content="/assets/icon/browserconfig.xml">
+<meta name="theme-color" content="#ffffff">
+
+<!-- CSS -->
+<link rel="stylesheet" href="/assets/css/main.css">
+<noscript><link rel="stylesheet" href="/assets/css/noscript.css"></noscript>
+
+	</head>
+	<body class="is-loading">
+
+		<!-- Wrapper -->
+			<div id="wrapper" class="fade-in">
+
+				<!-- Header -->
+        <header id="header">
+          <a href="/" class="logo">Yet Another Geek Blog</a>
+        </header>
+
+				<!-- Nav -->
+					<nav id="nav">
+
+            <ul class="links">
+  <li class=""><a href="/">Home</a></li>
+  <li class=""><a href="/about/">About</a></li>
+</ul>
+
+
+						<ul class="icons">
+              <li><a href="https://twitter.com/cboudereau" class="icon fa-twitter" rel="nofollow"><span class="label">Twitter</span></a></li>
+              <li><a href="https://github.com/cboudereau" class="icon fa-github" rel="nofollow"><span class="label">GitHub</span></a></li>
+              <li><a href="https://3dwarehouse.sketchup.com/user/cboudereau" class="icon" rel="nofollow"><img style="display: block" src="/images/su-logo-grid.png" absolute_url width="20px" height="20px" alt="3dwarehouse"></a></li>
+						</ul>
+				  </nav>
+
+				<!-- Main -->
+				<div id="main">
+          <section class="post">
+    				<header class="major">
+      				<span class="date">23 Nov 2017</span>
+      				<h1>How to reduce false negative in software testing!</h1>
+      				<p></p>
+<p>As a QA, you have to write/maintain some code in order to automate your activities.
+This activity is the same dev activity but… How do you test your code ?</p>
+
+
+      			</header>
+      			<div class="image main"><img src="/images/inception.jpg" alt=""></div>
+      			<p></p>
+<p>As a QA, you have to write/maintain some code in order to automate your activities.
+This activity is the same dev activity but… How do you test your code ?</p>
+
+<h2 id="use-the-write-tools">Use the write tools</h2>
+
+<p>Even if you use a tool, you have to integrate it to the existing QA environment. So you have to write code.
+Some QA teams builds a real app, libraries or exe.</p>
+
+<p>If you build a library, consider this activity like a dev and make unit test/build/ci.</p>
+
+<p>If you make an exe you are into the wrong path! If you do that you also need a QA!</p>
+
+<h2 id="qa-of-qa-whats-wrong-">QA of QA! What’s wrong ??</h2>
+<p>The QA of QA comes when you have a codebase that evolves and produces false negative.
+For example, your campaign is failing because you have introduced a bug into you setup script or whatever. 
+This business part is not tested and should not be tested!</p>
+
+<p>If the code is reusable and technical, it’s ok to build a library (ie:scrapping lib, xml utils, …)</p>
+
+<p>What about plumbing part like setup/teardown functions ?
+Generally this sort of code is hard to maintain and you have to run the entire test to get the problem.
+Running constantly the entire test to fix the setup/teardown part is wasting time! 
+This kind of tests could ran into 10 or 30s (or even higher) and because they are too long you loose the focus of the last problem. 
+So the number of iterations is higher than fixing code with a little test.
+Associated unit tests are hard to produce because it is side effect functions like executing sql query or enabling queue logging.
+If you have this problem, try to use alpha test.
+If the check part is possible consider using post assert in order to check the state before running test.</p>
+
+<p>An alpha test is a little test built by the developper in order to check a very little part (not the entier QA test but one step of the setup/teardown part).
+This test must be easy to write and easy to check.</p>
+
+<h2 id="how-do-you-run-alpha-test-from-existing-code-base-">How do you run alpha test from existing code base ?</h2>
+<p>First of all, you have to use a language having scripting and REPL properties like fsharp.
+In my experience, our QA team uses a csharp solution with specflow but there were no tests on the setup and teardown part.
+Sometimes they have false negative due to regression on the setup/teardown part. After understanding the problem, the queue logging part was not ok in that case.
+The problem was too complex to fix into the existing codebase, so we used the divide and conquer principle!
+First we extracted the code that activate the logging part into a fsharp script.
+Side effects are often hard to check so we used alpha testing by calling the fsharp func making the side effects and checked that the log was activated.
+Thanks to fsharp and its REPL + scripting properties executing a part of the setup/teardown is easier than the previous one plus the flow to produce the code force the QA dev to build very little function that do one thing at a time and packaging them into modules.</p>
+
+<p>In the end, a new fsharp assembly has been created and an associated script has been added to check the setup teardown using function composition even if it side effect and no familiar with functional programming paradigm.
+The .fs files could be alpha tested separately into a script and exposed to csharp.</p>
+
+<p>Here is for example hard code to test :</p>
+<div class="highlighter-rouge">
+<pre class="highlight"><code>let hello = printfn "hello %s"
+</code></pre>
+</div>
+
+<p>You can say that testing the StandardOuput is ok, but you have to add a lots of plumbing into your code to have the benefit.
+For this kind of function calling them directly and run it into an interactive is very easy because only one test is ok to check the effect.</p>
+
+<div class="highlighter-rouge">
+<pre class="highlight"><code>hello "QA"
+</code></pre>
+</div>
+
+<p>It is realy easy to press Alt+Enter and check that the function display hello QA!</p>
+
+<p>Here is what the interactive displays :</p>
+
+<div class="highlighter-rouge">
+<pre class="highlight"><code>val hello : (string -&gt; unit)
+
+&gt;
+&gt;
+hello QA
+val it : unit = ()
+</code></pre>
+</div>
+
+<h2 id="conclusion">Conclusion</h2>
+<ul>
+  <li>As a QA, if you have constantly false negative, try to use alpha test before pushing the code.</li>
+  <li>Alpha test, reduces the time to fix the problem by executing the impacted code part and checking step by step that everything is ok (REPL style).</li>
+  <li>Alpha test driven dev is ok for not valuable automated test (the check is too complex or the cost is too high).</li>
+  <li>If you are a .Net QA, try to use fsharp in place of existing codebase (ie : the setup/teardown part).</li>
+  <li>The flow to produce scripts is more efficient by always checking that the code is working.</li>
+  <li>It is a good way to learn fsharp and function programming step by step.</li>
+</ul>
+
+      		</section>
+
+          <div class="comments-wrapper">
+          <div id="disqus_thread"></div>
+          <script>
+              /**
+               *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+               *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+               */
+
+              var disqus_config = function () {
+                  this.page.url = '/fsharp/qa/scripting/2017/11/23/how-to-reduce-false-negative-in-software-testing.html';  /*Replace PAGE_URL with your page's canonical URL variable*/
+                  this.page.identifier = '/fsharp/qa/scripting/2017/11/23/how-to-reduce-false-negative-in-software-testing.html'; /*Replace PAGE_IDENTIFIER with your page's unique identifier variable*/
+              };
+
+              (function() {  /* dont endit below this line */
+                  var d = document, s = d.createElement('script');
+
+                  s.src = 'https://yagb.disqus.com/embed.js';
+
+                  s.setAttribute('data-timestamp', +new Date());
+                  (d.head || d.body).appendChild(s);
+              })();
+          </script>
+          <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a>
+</noscript>
+        </div>
+<!-- /.comments-wrapper -->
+
+
+					</div>
+
+			</div>
+
+      <!-- Scripts -->
+  		<!-- DYN -->
+<script src="/assets/js/jquery.min.js"></script>
+<script src="/assets/js/jquery.scrollex.min.js"></script>
+<script src="/assets/js/jquery.scrolly.min.js"></script>
+<script src="/assets/js/skel.min.js"></script>
+<script src="/assets/js/util.js"></script>
+<script src="/assets/js/main.js"></script>
+
+
+	</body>
+</html>

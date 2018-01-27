@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  
+    <url>
+      <loc>https://cboudereau.github.io//3d/books/learning/2017/12/24/sketchup-for-dummies-review.html</loc>
+      
+        <lastmod>2017-12-24T12:29:00+01:00</lastmod>
+      
+      <changefreq>weekly</changefreq>
+      <priority>0.7</priority>
+    </url>
+  
+    <url>
+      <loc>https://cboudereau.github.io//fsharp/qa/scripting/2017/11/23/how-to-reduce-false-negative-in-software-testing.html</loc>
+      
+        <lastmod>2017-11-23T12:04:00+01:00</lastmod>
+      
+      <changefreq>weekly</changefreq>
+      <priority>0.7</priority>
+    </url>
+  
+    <url>
+      <loc>https://cboudereau.github.io//fsharp/data/prod/2017/08/18/why-we-use-fsharp-data-in-prod.html</loc>
+      
+        <lastmod>2017-08-18T13:04:00+02:00</lastmod>
+      
+      <changefreq>weekly</changefreq>
+      <priority>0.7</priority>
+    </url>
+  
+    <url>
+      <loc>https://cboudereau.github.io//fsharp/parser/combinator/fparsec/proto3/2017/08/10/proto3-parser.html</loc>
+      
+        <lastmod>2017-08-10T13:13:00+02:00</lastmod>
+      
+      <changefreq>weekly</changefreq>
+      <priority>0.7</priority>
+    </url>
+  
+    <url>
+      <loc>https://cboudereau.github.io//fsharp,/parser/combinator/2017/08/09/why-parser.html</loc>
+      
+        <lastmod>2017-08-09T13:14:01+02:00</lastmod>
+      
+      <changefreq>weekly</changefreq>
+      <priority>0.7</priority>
+    </url>
+  
+  
+    <url>
+      <loc>https://cboudereau.github.io//404.html</loc>
+       <lastmod>2017-11-10T00:20:35+00:00</lastmod>
+      
+       <changefreq>weekly</changefreq>
+      
+       <priority>0.5</priority>
+      
+     </url>
+  
+    <url>
+      <loc>https://cboudereau.github.io//about/</loc>
+       <lastmod>2017-11-10T00:20:35+00:00</lastmod>
+      
+       <changefreq>weekly</changefreq>
+      
+       <priority>0.5</priority>
+      
+     </url>
+  
+    <url>
+      <loc>https://cboudereau.github.io//elements.html</loc>
+       <lastmod>2017-11-02T00:00:00+01:00</lastmod>
+      
+       <changefreq>weekly</changefreq>
+      
+       <priority>0.7</priority>
+      
+     </url>
+  
+    <url>
+      <loc>https://cboudereau.github.io//</loc>
+       <lastmod>2018-01-27T00:00:00+01:00</lastmod>
+      
+       <changefreq>weekly</changefreq>
+      
+       <priority>1.0</priority>
+      
+     </url>
+  
+    <url>
+      <loc>https://cboudereau.github.io//sitemap.xml</loc>
+       <lastmod>2017-11-10T00:20:35+00:00</lastmod>
+      
+       <changefreq>weekly</changefreq>
+      
+       <priority>0.5</priority>
+      
+     </url>
+  
+    <url>
+      <loc>https://cboudereau.github.io//feed.xml</loc>
+       <lastmod>2017-11-10T00:20:35+00:00</lastmod>
+      
+       <changefreq>weekly</changefreq>
+      
+       <priority>0.5</priority>
+      
+     </url>
+  
+    <url>
+      <loc>https://cboudereau.github.io//feed.xslt.xml</loc>
+       <lastmod>2017-11-10T00:20:35+00:00</lastmod>
+      
+       <changefreq>weekly</changefreq>
+      
+       <priority>0.5</priority>
+      
+     </url>
+  
+</urlset>

@@ -10,6 +10,9 @@ comments: true
 I had to write an application that handle 2200 msg per second. 
 This application consist of indexing and compress data with 7z.
 
+And here is why I use a parser combinator.
+<!--more-->
+
 > I will write another post for the usage of the awesome [fszmq](https://github.com/zeromq/fszmq) and a custom interop of 7z in a later post.
 
 ## Disclaimer

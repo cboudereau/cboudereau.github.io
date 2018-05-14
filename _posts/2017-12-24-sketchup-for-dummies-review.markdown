@@ -9,6 +9,7 @@ comments: true
 
 Sketchup is easy to use but to mastering it and creating wonderfull things you need some help.
 Sketchup for dummies! For dummies ? Don't be shy and try the experience thanks to [Rebecca Huehls](https://twitter.com/rebeccahuehls/)
+<!--more-->
 
 ![Sketchup for dummies]({{ "/images/sketchup-for-dummies.jpg" }})
 

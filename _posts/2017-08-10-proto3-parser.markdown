@@ -9,6 +9,7 @@ comments: true
 I would like to try [FParsec](http://www.quanttec.com/fparsec/) fsharp parser to parse proto3 message.
 
 I used this [FParsec](http://www.quanttec.com/fparsec/) [tutorial](http://www.quanttec.com/fparsec/tutorial.html#parsing-json) first in order to be more familiar with this library.
+<!--more-->
 
 ## Disclaimer
 > This is not a production code

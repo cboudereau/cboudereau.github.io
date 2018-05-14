@@ -48,7 +48,7 @@ sitemap:
 						<ul class="icons">
               <li><a href="https://twitter.com/{{site.twitter}}" class="icon fa-twitter" rel="nofollow"><span class="label">Twitter</span></a></li>
               <li><a href="https://github.com/{{site.github}}" class="icon fa-github" rel="nofollow"><span class="label">GitHub</span></a></li>
-              <li><a href="https://3dwarehouse.sketchup.com/user/{{site.3dwarehouse}}" class="icon" rel="nofollow"><img style="display: block" src="{{ "/images/su-logo-grid.png" | absolute_url }}" | absolute_url }}" " width="20px" height="20px" alt="3dwarehouse"></img></a></li>
+              <li><a href="https://3dwarehouse.sketchup.com/user/{{site.sk3dwarehouse}}" class="icon" rel="nofollow"><img style="display: block" src="{{ "/images/su-logo-grid.png" | absolute_url }}" | absolute_url }}" " width="20px" height="20px" alt="3dwarehouse"></img></a></li>
 						</ul>
 					</nav>
 
@@ -64,7 +64,7 @@ sitemap:
   										<h2><a href="{{ post.url | absolute_url }}">{{ post.title }}</h2>
   									</header>
   									<a href="{{ post.url | absolute_url }}" class="image fit"><img src="{{ post.image | absolute_url }}" alt="" /></a>
-  									<p>{{ post.excerpt }}</p>
+  									<p>{{ post.excerpt | strip_html }}</p>
   									<ul class="actions">
   										<li><a href="{{ post.url | absolute_url }}" class="button">Full Story</a></li>
   									</ul>

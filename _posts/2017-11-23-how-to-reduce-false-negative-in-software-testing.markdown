@@ -9,6 +9,7 @@ comments: true
 
 As a QA, you have to write/maintain some code in order to automate your activities.
 This activity is the same dev activity but... How do you test your code ?
+<!--more-->
 
 ## Use the right tools
 

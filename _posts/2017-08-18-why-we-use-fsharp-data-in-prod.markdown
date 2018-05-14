@@ -11,6 +11,8 @@ I am currently working at a company that deal with hundreds of connectivities (a
 
 Since 2014 we have used fsharp data progressively in production (I use fsharp in prod since 2012).
 
+<!--more-->
+
 Today we have more than 10% and 1 of the top 3 (top business, high performance) in prod plus a custom big data solution in full fsharp (the company guarantee in case of sales/stockout risk for exchanged data thanks to zmq + 7z + Azure)
 
 We use fsharp data into different stages of a project : estimation, proof of concept, dev.

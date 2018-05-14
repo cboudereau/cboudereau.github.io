@@ -10,6 +10,7 @@ github_username:  cboudereau
 
 # Jekyll
 markdown:           kramdown
+excerpt_separator:  <!--more-->
 highlighter:        rouge
 kramdown:
   auto_ids:         true
@@ -29,14 +30,13 @@ disqus_shortname:   yagb
 analytics-id:       "default"
 twitter:            cboudereau
 github:             cboudereau
-3dwarehouse:        cboudereau
+sk3dwarehouse:      cboudereau
 
 # personal
 location:           France, FR
 email:              cboudereau@gmail.com
 
-# Gems
-gems:
+plugins:
   - jekyll-mentions
   - jekyll-sitemap
   - jekyll-feed

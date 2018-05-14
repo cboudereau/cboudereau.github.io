@@ -1,5 +1,375 @@
-<?xml version="1.0" encoding="utf-8"?><?xml-stylesheet type="text/xml" href="https://cboudereau.github.io//feed.xslt.xml"?><feed xmlns="http://www.w3.org/2005/Atom"><generator uri="http://jekyllrb.com" version="3.2.1">Jekyll</generator><link href="https://cboudereau.github.io//feed.xml" rel="self" type="application/atom+xml" /><link href="https://cboudereau.github.io//" rel="alternate" type="text/html" /><updated>2018-04-13T12:17:04+02:00</updated><id>https://cboudereau.github.io//</id><title type="html">Yet Another Geek Blog</title><subtitle>Yet Another Geek Blog : dev with fun(ction)</subtitle><entry><title type="html">[Books] Sketchup for dummies review</title><link href="https://cboudereau.github.io//3d/books/learning/2017/12/24/sketchup-for-dummies-review.html" rel="alternate" type="text/html" title="[Books] Sketchup for dummies review" /><published>2017-12-24T12:29:00+01:00</published><updated>2017-12-24T12:29:00+01:00</updated><id>https://cboudereau.github.io//3d/books/learning/2017/12/24/sketchup-for-dummies-review</id><content type="html" xml:base="https://cboudereau.github.io//3d/books/learning/2017/12/24/sketchup-for-dummies-review.html">&lt;p&gt;Sketchup is easy to use but to mastering it and creating wonderfull things you need some help.
-Sketchup for dummies! For dummies ? Don’t be shy and try the experience thanks to &lt;a href=&quot;https://twitter.com/rebeccahuehls/&quot;&gt;Rebecca Huehls&lt;/a&gt;&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.7.3">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2018-05-14T17:55:06+02:00</updated><id>/</id><title type="html">Yet Another Geek Blog</title><subtitle>Yet Another Geek Blog : dev with fun(ction)</subtitle><entry><title type="html">Finding your baby name with fsharp</title><link href="/fsharp/data/hack/2018/05/11/finding-your-baby-name-with-fsharp.html" rel="alternate" type="text/html" title="Finding your baby name with fsharp" /><published>2018-05-11T08:23:10+02:00</published><updated>2018-05-11T08:23:10+02:00</updated><id>/fsharp/data/hack/2018/05/11/finding-your-baby-name-with-fsharp</id><content type="html" xml:base="/fsharp/data/hack/2018/05/11/finding-your-baby-name-with-fsharp.html">&lt;p&gt;First of all I am glad to have another child in my familly.&lt;/p&gt;
+
+&lt;p&gt;He is my 2nd boy, so it was really hard for us to find another boy name.
+&lt;!--more--&gt;&lt;/p&gt;
+
+&lt;p&gt;I found this french data : https://www.insee.fr/fr/statistiques/fichier/2540004/nat2016_txt.zip but there is 14596 boys names; the choice is hard!&lt;/p&gt;
+
+&lt;p&gt;How to find the pretty well name for my little boy ?&lt;/p&gt;
+
+&lt;h2 id=&quot;the-problem&quot;&gt;The Problem&lt;/h2&gt;
+&lt;p&gt;I was using this site : https://dataaddict.fr/prenoms/ and I saw one problem : Lack of classification. 
+In spite of that point, the idea is good : to see how and when a name is used with stats.&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;I would like to see names by their properties (long, short, composed, …).&lt;/li&gt;
+  &lt;li&gt;And group them phonetically&lt;/li&gt;
+  &lt;li&gt;See less than 100 names in a graph of usage per year&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;So the aim of this hack was to provide a way to reduce the amount of name that we don’t wan’t due to their caracteristics.&lt;/p&gt;
+
+&lt;h2 id=&quot;parsing-the-data&quot;&gt;Parsing the data&lt;/h2&gt;
+&lt;p&gt;FSharp has a fast data analytics in its core so it is just one line to parse the csv.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;#r &quot;packages/FSharp.Data/lib/net45/FSharp.Data.dll&quot;
+
+open FSharp.Data
+
+type FirstNameStats = CsvProvider&amp;lt; &quot;nat2016_txt/nat2016.txt&quot;, Separators = &quot;\t&quot;, HasHeaders=true &amp;gt;
+
+let stats = FirstNameStats.Load(&quot;nat2016_txt/nat2016.txt&quot;)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now build a function that returns all name for a given gender.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;module Int32 = 
+    let tryInt x = 
+        match System.Int32.TryParse(x) with
+        | true, i -&amp;gt; Some i
+        | _ -&amp;gt; None
+
+type Gender = 
+    | Masculine = 1
+    | Feminine = 2
+
+module Gender = 
+    let value (s:Gender) = int s
+
+type [&amp;lt;Struct&amp;gt;] Year = Year of int
+type [&amp;lt;Struct&amp;gt;] FirstName = FirstName of string
+
+let firstNames gender = 
+    stats.Rows 
+    |&amp;gt; Seq.choose (fun x -&amp;gt; 
+        Int32.tryInt x.Annais 
+        |&amp;gt; Option.bind (fun y -&amp;gt; if x.Sexe = (gender |&amp;gt; Gender.value) then Some (FirstName x.Preusuel, (Year y, x.Nombre)) else None) )
+
+let boys = firstNames Gender.Masculine
+
+boys |&amp;gt; Seq.take 10 |&amp;gt; Seq.toList
+
+(* It outputs : 
+[(FirstName &quot;A&quot;, (Year 1980, 3)); (FirstName &quot;A&quot;, (Year 1998, 3));
+ (FirstName &quot;AADAM&quot;, (Year 2009, 4)); (FirstName &quot;AADAM&quot;, (Year 2014, 3));
+ (FirstName &quot;AADAM&quot;, (Year 2016, 4)); (FirstName &quot;AADEL&quot;, (Year 1976, 5));
+ (FirstName &quot;AADEL&quot;, (Year 1978, 3)); (FirstName &quot;AADEL&quot;, (Year 1980, 3));
+ (FirstName &quot;AADEL&quot;, (Year 1981, 5)); (FirstName &quot;AADEL&quot;, (Year 1982, 4))]
+*)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now that we have names in memory, how can I classify information and search in it ?&lt;/p&gt;
+
+&lt;h2 id=&quot;classify-classify-classify&quot;&gt;Classify, classify, classify&lt;/h2&gt;
+&lt;p&gt;After analysing the data, I was finding my name (Clément) when I see that there was different spelling (accent and other difference).
+To reduce the amount of duplicate phonetic match, I would like to group name by phonetic match.&lt;/p&gt;
+
+&lt;p&gt;The main problem with phonetic algorithm was the lowest telerance with cross language spelling variation.&lt;/p&gt;
+
+&lt;p&gt;Here is some case where I did not find the right math :&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;“Yolaine” : “Yolène”, “Yolene”&lt;/li&gt;
+  &lt;li&gt;“Clément” : “Clement”, “Klement”&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;I try with different french algorithm like Soundex and Phonex and the best one was Phonex (Good balance between redundancy and spelling variation).&lt;/p&gt;
+
+&lt;p&gt;I have patched the Phonex algorithm to match the 2 cases “Yolaine” and “Clement”.&lt;/p&gt;
+
+&lt;p&gt;You can check the differences &lt;a href=&quot;https://github.com/cboudereau/firstname/commit/a2fee2492820fe59d2df928cd82473f27086fe96#diff-03d56f95fd97ac5769359687562f51e7&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;You could see the result of my attempts to use soundex2 instead.&lt;/p&gt;
+
+&lt;p&gt;Here is the patched translation in fsharp of &lt;a href=&quot;https://github.com/Noethys/Teamworks/blob/master/source/Phonex.py&quot;&gt;this python implementation&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&quot;phonetic-hash&quot;&gt;Phonetic Hash&lt;/h2&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;module Phonex = 
+    let toLower x = (x:string).ToLower ()
+    let accentLess x = System.Text.Encoding.GetEncoding(&quot;ISO-8859-8&quot;).GetBytes(x:string) |&amp;gt; System.Text.Encoding.UTF8.GetString
+    let replace target replacement source = (source:string).Replace((target:string), replacement)
+    let rI = replace &quot;y&quot; &quot;i&quot;
+    let rF = replace &quot;ph&quot; &quot;f&quot; 
+    let replaceAny targets replacement source = targets |&amp;gt; List.fold (fun s t -&amp;gt; replace t replacement s) source
+    let rCh = replaceAny [&quot;sh&quot;; &quot;ch&quot;; &quot;sch&quot;] &quot;5&quot;
+    let remove target source = replace target &quot;&quot; source
+    let rmH = remove &quot;h&quot;
+    let rmapping tr source = tr |&amp;gt; List.fold (fun s (t,r) -&amp;gt; replace t r s) source
+    let rGan = rmapping [ &quot;gan&quot;, &quot;kan&quot;
+                          &quot;gam&quot;, &quot;kam&quot;
+                          &quot;gain&quot;, &quot;kain&quot;
+                          &quot;gaim&quot;, &quot;kaim&quot; ]
+    let between before after replacement source target = 
+        let rec between offset source = 
+            if offset &amp;lt; (source:string).Length then 
+                let lt = (target:string).Length
+                let tail = source.Substring(offset)
+                let idx = tail.IndexOf(target)
+                if idx &amp;lt;&amp;gt; -1 &amp;amp;&amp;amp; (before (tail.Substring(0, idx)) &amp;amp;&amp;amp; after(tail.Substring(idx + lt))) then
+                    sprintf &quot;%s%s%s&quot; (source.Substring(0, offset + idx)) replacement (tail.Substring(idx + lt, tail.Length - idx - lt))
+                    |&amp;gt; between (idx + replacement.Length)
+                else source
+            else source
+        between 0 source
+    let all = fun _ -&amp;gt; true
+    let suffix f replacement source target = between all f replacement source target
+    let suffixL f replacement targets source = targets |&amp;gt; List.fold (suffix f replacement) source
+    let [&amp;lt;Literal&amp;gt;] Vowel = &quot;aeiou&quot;
+    let isVowel x = Vowel |&amp;gt; Seq.exists ((=) x)
+    let tryIsVowel = Option.map isVowel &amp;gt;&amp;gt; Option.defaultValue false 
+    let tryIsNotVowel = tryIsVowel &amp;gt;&amp;gt; not
+    let rAin  = [&quot;ain&quot;; &quot;ein&quot;; &quot;ain&quot;; &quot;eim&quot;; &quot;aim&quot;] |&amp;gt; suffixL (Seq.tryHead &amp;gt;&amp;gt; tryIsVowel) &quot;en&quot;
+    let rO = replace &quot;eau&quot; &quot;o&quot;
+    let rOua = replace &quot;oua&quot; &quot;2&quot;
+    let rEin = replaceAny [&quot;ein&quot;;&quot;ain&quot;;&quot;eim&quot;;&quot;aim&quot;] &quot;4&quot;
+    let rAi = replaceAny [&quot;ai&quot;;&quot;ei&quot;] &quot;e&quot;
+    let rEr = replace &quot;er&quot; &quot;yr&quot;
+    let rEss = replace &quot;ess&quot; &quot;yss&quot;
+    let rEt = replace &quot;et&quot; &quot;yt&quot;
+    let rAn = [&quot;an&quot;;&quot;am&quot;;&quot;en&quot;;&quot;em&quot;] |&amp;gt; suffixL (Seq.tryHead &amp;gt;&amp;gt; tryIsNotVowel) &quot;1&quot;
+    let rIn source = suffix (Seq.tryHead &amp;gt;&amp;gt; tryIsNotVowel) &quot;4&quot; source &quot;in&quot;
+    let rOn = replace &quot;on&quot; &quot;1&quot;
+    let rZ source = 
+        let isCandidate c = ['1' .. '4'] |&amp;gt; List.append (Vowel |&amp;gt; Seq.toList) |&amp;gt; List.exists ((=) c)
+        let tryIsCandidate = Option.map isCandidate &amp;gt;&amp;gt; Option.defaultValue false
+        between (Seq.tryLast &amp;gt;&amp;gt; tryIsCandidate) (Seq.tryHead &amp;gt;&amp;gt; tryIsCandidate) &quot;z&quot; source &quot;s&quot;
+    let rE = replaceAny [&quot;oe&quot;;&quot;eu&quot;] &quot;e&quot;
+    let rAu = replace &quot;au&quot; &quot;o&quot;
+    let rOi = replaceAny [&quot;oi&quot;; &quot;oy&quot;] &quot;2&quot;
+    let rOu = replace &quot;ou&quot; &quot;3&quot;
+    let rS = replaceAny [&quot;ss&quot;;&quot;sc&quot;] &quot;s&quot;
+    let rC source = 
+        let isCandidate c = &quot;ei&quot; |&amp;gt; Seq.exists ((=) c)
+        let tryIsCandidate = Seq.tryHead &amp;gt;&amp;gt; Option.map isCandidate &amp;gt;&amp;gt; Option.defaultValue false
+        suffix tryIsCandidate &quot;s&quot; source &quot;c&quot;
+    let rK = replaceAny [&quot;c&quot;;&quot;q&quot;;&quot;qu&quot;;&quot;gu&quot;] &quot;k&quot;
+    let rGa = replace &quot;ga&quot; &quot;ka&quot;
+    let rGo = replace &quot;go&quot; &quot;ko&quot;
+    let rGy = replace &quot;gy&quot; &quot;ky&quot;
+    let trim letters = 
+        Seq.distinct &amp;gt;&amp;gt; Seq.toArray
+        &amp;gt;&amp;gt; fun y -&amp;gt; 
+            let n = Array.length y - 1
+            let c = y.[n] 
+            if letters |&amp;gt; List.exists ((=) c) then Array.take n y 
+            else y
+        &amp;gt;&amp;gt; System.String
+
+    let rLast =
+        rmapping [ &quot;a&quot;,&quot;o&quot;
+                   &quot;d&quot;,&quot;t&quot;
+                   &quot;p&quot;,&quot;t&quot;
+                   &quot;j&quot;,&quot;g&quot;
+                   &quot;b&quot;,&quot;f&quot;
+                   &quot;v&quot;,&quot;f&quot;
+                   &quot;m&quot;,&quot;n&quot; ]
+
+    let hash = 
+        toLower &amp;gt;&amp;gt; accentLess 
+        &amp;gt;&amp;gt; rI &amp;gt;&amp;gt; rF &amp;gt;&amp;gt; rCh &amp;gt;&amp;gt; rmH 
+        &amp;gt;&amp;gt; rGan &amp;gt;&amp;gt; rAin &amp;gt;&amp;gt; rO &amp;gt;&amp;gt; rOua
+        &amp;gt;&amp;gt; rEin &amp;gt;&amp;gt; rAi 
+        &amp;gt;&amp;gt; rEr &amp;gt;&amp;gt; rEss &amp;gt;&amp;gt; rEt
+        &amp;gt;&amp;gt; rAn &amp;gt;&amp;gt; rIn &amp;gt;&amp;gt; rOn
+        &amp;gt;&amp;gt; rZ &amp;gt;&amp;gt; rE &amp;gt;&amp;gt; rAu &amp;gt;&amp;gt; rOi &amp;gt;&amp;gt; rOu
+        &amp;gt;&amp;gt; rS &amp;gt;&amp;gt; rC &amp;gt;&amp;gt; rK &amp;gt;&amp;gt; rGa &amp;gt;&amp;gt; rGo &amp;gt;&amp;gt; rGy
+        &amp;gt;&amp;gt; rLast
+        &amp;gt;&amp;gt; trim ['x';'t']
+
+Phonex.hash &quot;klement&quot; //kl1
+Phonex.hash &quot;clément&quot; //kl1
+Phonex.hash &quot;clement&quot; //kl1
+
+Phonex.hash &quot;clemens&quot; //kl1s
+
+Phonex.hash &quot;yolaine&quot; //iolen
+Phonex.hash &quot;yolène&quot; //iolen
+Phonex.hash &quot;yoléne&quot; //iolen
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;This is not the best implementation (string allocations) but it is ok for our case. 
+I tried to use FParsec for this case but the performance was not really impressive (may be I was wrong.).
+Here is my attempt if you want to give me a better implementation : https://github.com/cboudereau/firstname/blob/master/phonex.fsx&lt;/p&gt;
+
+&lt;p&gt;The main point : the function composition of the Phonex hash function&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Pipeline pattern&lt;/li&gt;
+  &lt;li&gt;Easy to fix&lt;/li&gt;
+  &lt;li&gt;Easy to test (unit tests or integration tests)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Sounds good :)&lt;/p&gt;
+
+&lt;h2 id=&quot;a-quick-test&quot;&gt;A quick test&lt;/h2&gt;
+
+&lt;p&gt;Now that we have the algorithm to hash phonetically names, we can write a function that reduce the amount of names!&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;module Snd = 
+    let map f (x,y) = x, f y
+
+type [&amp;lt;Struct&amp;gt;] Phonetic = Phonetic of string
+
+let phonetic f = 
+    Seq.map (fun ((FirstName n), (y, c)) -&amp;gt; f n |&amp;gt; Phonetic, (y,(FirstName n,c)))
+    &amp;gt;&amp;gt; Seq.groupBy fst
+    &amp;gt;&amp;gt; Seq.map ( 
+        Snd.map (
+            Seq.map snd 
+            &amp;gt;&amp;gt; Seq.groupBy fst 
+            &amp;gt;&amp;gt; Seq.map (Snd.map (Seq.map snd)) 
+            &amp;gt;&amp;gt; Seq.sortBy fst))
+
+let pBoys = boys |&amp;gt; phonetic Phonex.hash
+
+pBoys |&amp;gt; Seq.map (Snd.map (Seq.collect snd &amp;gt;&amp;gt; Seq.map fst &amp;gt;&amp;gt; Seq.distinct &amp;gt;&amp;gt; Seq.toList)) |&amp;gt; Map.ofSeq
+|&amp;gt; Map.tryFind (Phonex.hash &quot;Clément&quot; |&amp;gt; Phonetic)
+
+(*
+val it : FirstName list option =
+  Some
+    [FirstName &quot;CLÉMENT&quot;; FirstName &quot;CLEMENT&quot;; FirstName &quot;KLEMENT&quot;;
+     FirstName &quot;KLÉMENT&quot;]
+*)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Hey not bad !&lt;/p&gt;
+
+&lt;p&gt;Now we have only 7413 names to check.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;A name has around 2 spelling.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;7413 names is still high to check names and with my wife we know what kind of name we don’t want (too long, too short, …)&lt;/p&gt;
+
+&lt;h2 id=&quot;phonetic-categorization&quot;&gt;Phonetic categorization&lt;/h2&gt;
+&lt;p&gt;For the next part, we will use this block of code and introduced each function.
+We can for example control the phonetic length of the name.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;module Phonetic = 
+    let value (Phonetic p) = p
+    let short = value &amp;gt;&amp;gt; fun p -&amp;gt; p.Length &amp;lt; 7
+    let little = value &amp;gt;&amp;gt; fun p -&amp;gt; p.Length &amp;lt; 3
+    let onlyComposed = value &amp;gt;&amp;gt; fun p -&amp;gt; p.Contains(&quot;-&quot;)
+    let notComposed = onlyComposed &amp;gt;&amp;gt; not
+    let blacklist l = 
+        let bl = l |&amp;gt; Seq.map value |&amp;gt; Seq.toList
+        value
+        &amp;gt;&amp;gt; fun p -&amp;gt; bl |&amp;gt; List.exists ((=) p) |&amp;gt; not
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;composed-or-not-composed-&quot;&gt;Composed or not composed ?&lt;/h3&gt;
+&lt;p&gt;Depending of your choice, composed names can right down the problem quickly.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let onlyComposed = pBoys |&amp;gt; Seq.filter (fst &amp;gt;&amp;gt; Phonetic.onlyComposed) 
+onlyComposed |&amp;gt; Seq.length //975
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let notComposed = pBoys |&amp;gt; Seq.filter (fst &amp;gt;&amp;gt; Phonetic.notComposed) 
+notComposed |&amp;gt; Seq.length //6438
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;We choosed the not composed version :)&lt;/p&gt;
+
+&lt;h3 id=&quot;short-or-long-&quot;&gt;Short or long ?&lt;/h3&gt;
+&lt;p&gt;In france there is a one letter name “A”.
+We choose a not too short and not too long name for our baby (between 3 and 7 sounds) :&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let notComposedAndShort = notComposed |&amp;gt; Seq.filter (fst &amp;gt;&amp;gt; Phonetic.short)
+notComposedAndShort |&amp;gt; Seq.length //5953
+
+let notComposedAndTooShort = notComposedAndShort |&amp;gt; Seq.filter (fst &amp;gt;&amp;gt; Phonetic.little &amp;gt;&amp;gt; not)
+notComposedAndTooShort |&amp;gt; Seq.length //5827
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;As usual we choose the less restrictive… :)&lt;/p&gt;
+
+&lt;h3 id=&quot;mixed-&quot;&gt;Mixed ?&lt;/h3&gt;
+&lt;p&gt;We want a masculine only name (ie: France could be a masculine or feminine name)&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let pGirl = firstNames Gender.Feminine |&amp;gt; phonetic Phonex.hash
+let onlyBoys = notComposedAndTooShort |&amp;gt; Seq.filter (fst &amp;gt;&amp;gt; (Phonetic.blacklist (pGirl |&amp;gt; Seq.map fst |&amp;gt; Seq.toList)))
+onlyBoys |&amp;gt; Seq.length //3752
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;classic-or-not-&quot;&gt;Classic or not ?&lt;/h3&gt;
+&lt;p&gt;According to the data, a classic name is used 5000 times from the beginning of the stats (20th century).&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let classic = onlyBoys |&amp;gt; Seq.filter (snd &amp;gt;&amp;gt; Seq.collect snd &amp;gt;&amp;gt; Seq.sumBy snd &amp;gt;&amp;gt; (&amp;lt;) 5000)
+classic |&amp;gt; Seq.length //95
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Now we got it : 95 names!&lt;/p&gt;
+
+&lt;h2 id=&quot;graph-it-&quot;&gt;Graph it !&lt;/h2&gt;
+&lt;p&gt;For this part I use XPlot.GoogleCharts that is pretty awesome for our needs.&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;#I &quot;packages/Google.DataTable.Net.Wrapper/lib/&quot;
+#I &quot;packages/XPlot.GoogleCharts/lib/net45/&quot;
+#r &quot;XPlot.GoogleCharts.dll&quot;
+open XPlot.GoogleCharts
+
+let result = classic
+
+let graph average (data:(string * seq&amp;lt;System.DateTime*float&amp;gt;) list) =     
+    let labels = data |&amp;gt; List.map fst
+    let points = data |&amp;gt; List.map snd
+    let options =
+        Options(
+            title = &quot;Number of firstname by year and average&quot;,
+            vAxis = Axis(title = &quot;Count&quot;),
+            hAxis = Axis(title = &quot;Year&quot;),
+            series =
+                [|
+                    yield Series(``type`` = &quot;lines&quot;)
+                    yield! labels |&amp;gt; Seq.map (fun _ -&amp;gt; Series(``type`` = &quot;bars&quot;))
+                |]
+        )
+ 
+    (average :: points)
+    |&amp;gt; Chart.Combo
+    |&amp;gt; Chart.WithOptions options
+    |&amp;gt; Chart.WithLabels (&quot;Average&quot; :: labels)
+    |&amp;gt; Chart.Show
+
+let average = 
+    Seq.collect (snd &amp;gt;&amp;gt; Seq.map (Snd.map (Seq.sumBy snd)))
+    &amp;gt;&amp;gt; Seq.groupBy fst
+    &amp;gt;&amp;gt; Seq.map (fun (Year y,c) -&amp;gt; System.DateTime(y,1,1), c |&amp;gt; Seq.averageBy (snd &amp;gt;&amp;gt; float))
+    &amp;gt;&amp;gt; Seq.sortBy fst
+    &amp;gt;&amp;gt; Seq.toList
+
+let datas = 
+    Seq.map (fun (_, s) -&amp;gt;
+        let mostUsedName = s |&amp;gt; Seq.collect snd |&amp;gt; Seq.sortByDescending snd |&amp;gt; Seq.map fst |&amp;gt; Seq.head
+        mostUsedName, s |&amp;gt; Seq.map (Snd.map (Seq.sumBy snd)))
+    &amp;gt;&amp;gt; Seq.map (fun (FirstName n, s) -&amp;gt; n, s |&amp;gt; Seq.map (fun (Year y, c) -&amp;gt; System.DateTime(y,1,1), float c) |&amp;gt; Seq.sortBy fst)
+
+let av = average result
+
+datas result |&amp;gt; Seq.toList |&amp;gt; graph av
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h2 id=&quot;final-result&quot;&gt;Final Result&lt;/h2&gt;
+&lt;p&gt;&lt;img src=&quot;/images/namestats.png&quot; alt=&quot;Final result&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;You can checkout the code &lt;a href=&quot;https://github.com/cboudereau/firstname/blob/master/blog.fsx&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;The name of my little boy is : Baptiste&lt;/p&gt;
+
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
+&lt;p&gt;I guess we could analyse the keyword of baby name descriptions from Internet and then categorize them into a graph and navigate inside. 
+It would be nice! If you done it, do not hesitate to contact me!&lt;/p&gt;</content><author><name></name></author><summary type="html">First of all I am glad to have another child in my familly. He is my 2nd boy, so it was really hard for us to find another boy name.</summary><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="/images/baptiste.png" /></entry><entry><title type="html">[Books] Sketchup for dummies review</title><link href="/3d/books/learning/2017/12/24/sketchup-for-dummies-review.html" rel="alternate" type="text/html" title="[Books] Sketchup for dummies review" /><published>2017-12-24T12:29:00+01:00</published><updated>2017-12-24T12:29:00+01:00</updated><id>/3d/books/learning/2017/12/24/sketchup-for-dummies-review</id><content type="html" xml:base="/3d/books/learning/2017/12/24/sketchup-for-dummies-review.html">&lt;p&gt;Sketchup is easy to use but to mastering it and creating wonderfull things you need some help.
+Sketchup for dummies! For dummies ? Don’t be shy and try the experience thanks to &lt;a href=&quot;https://twitter.com/rebeccahuehls/&quot;&gt;Rebecca Huehls&lt;/a&gt;
+&lt;!--more--&gt;&lt;/p&gt;
 
 &lt;p&gt;&lt;img src=&quot;/images/sketchup-for-dummies.jpg&quot; alt=&quot;Sketchup for dummies&quot; /&gt;&lt;/p&gt;
 
@@ -35,9 +405,9 @@ Sketchup for dummies! For dummies ? Don’t be shy and try the experience thanks
 
 &lt;p&gt;You could buy this book at &lt;a href=&quot;https://www.amazon.com/SketchUp-Dummies-Computers-Aidan-Chopra-ebook/dp/B06XGNPR8Z&quot;&gt;amazon&lt;/a&gt;&lt;/p&gt;
 
-&lt;p&gt;The author is really sympatic and you can enhance your experience by using twitter at : &lt;a href=&quot;https://twitter.com/rebeccahuehls/&quot;&gt;@rebeccahuehls&lt;/a&gt;&lt;/p&gt;</content><summary type="html">Sketchup is easy to use but to mastering it and creating wonderfull things you need some help.
-Sketchup for dummies! For dummies ? Don’t be shy and try the experience thanks to Rebecca Huehls</summary><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://cboudereau.github.io//images/sketchup-for-dummies_thumbs.jpg" /></entry><entry><title type="html">How to reduce false negative in software testing!</title><link href="https://cboudereau.github.io//fsharp/qa/scripting/2017/11/23/how-to-reduce-false-negative-in-software-testing.html" rel="alternate" type="text/html" title="How to reduce false negative in software testing!" /><published>2017-11-23T12:04:00+01:00</published><updated>2017-11-23T12:04:00+01:00</updated><id>https://cboudereau.github.io//fsharp/qa/scripting/2017/11/23/how-to-reduce-false-negative-in-software-testing</id><content type="html" xml:base="https://cboudereau.github.io//fsharp/qa/scripting/2017/11/23/how-to-reduce-false-negative-in-software-testing.html">&lt;p&gt;As a QA, you have to write/maintain some code in order to automate your activities.
-This activity is the same dev activity but… How do you test your code ?&lt;/p&gt;
+&lt;p&gt;The author is really sympatic and you can enhance your experience by using twitter at : &lt;a href=&quot;https://twitter.com/rebeccahuehls/&quot;&gt;@rebeccahuehls&lt;/a&gt;&lt;/p&gt;</content><author><name></name></author><summary type="html">Sketchup is easy to use but to mastering it and creating wonderfull things you need some help. Sketchup for dummies! For dummies ? Don’t be shy and try the experience thanks to Rebecca Huehls</summary><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="/images/sketchup-for-dummies_thumbs.jpg" /></entry><entry><title type="html">How to reduce false negative in software testing!</title><link href="/fsharp/qa/scripting/2017/11/23/how-to-reduce-false-negative-in-software-testing.html" rel="alternate" type="text/html" title="How to reduce false negative in software testing!" /><published>2017-11-23T12:04:00+01:00</published><updated>2017-11-23T12:04:00+01:00</updated><id>/fsharp/qa/scripting/2017/11/23/how-to-reduce-false-negative-in-software-testing</id><content type="html" xml:base="/fsharp/qa/scripting/2017/11/23/how-to-reduce-false-negative-in-software-testing.html">&lt;p&gt;As a QA, you have to write/maintain some code in order to automate your activities.
+This activity is the same dev activity but… How do you test your code ?
+&lt;!--more--&gt;&lt;/p&gt;
 
 &lt;h2 id=&quot;use-the-right-tools&quot;&gt;Use the right tools&lt;/h2&gt;
 
@@ -80,29 +450,26 @@ Thanks to fsharp and its REPL + scripting properties executing a part of the set
 The .fs files could be alpha tested separately into a script and exposed to csharp.&lt;/p&gt;
 
 &lt;p&gt;Here is for example hard code to test :&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let hello = printfn &quot;hello %s&quot;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let hello = printfn &quot;hello %s&quot;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;You can say that testing the StandardOuput is ok, but you have to add a lots of plumbing into your code to have the benefit.
 For this kind of function calling them directly and run it into an interactive is very easy because only one test is ok to check the effect.&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;hello &quot;QA&quot;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;hello &quot;QA&quot;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;It is realy easy to press Alt+Enter and check that the function display hello QA!&lt;/p&gt;
 
 &lt;p&gt;Here is what the interactive displays :&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;val hello : (string -&amp;gt; unit)
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;val hello : (string -&amp;gt; unit)
 
 &amp;gt;
 &amp;gt;
 hello QA
 val it : unit = ()
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
 &lt;ul&gt;
@@ -112,10 +479,11 @@ val it : unit = ()
   &lt;li&gt;If you are a .Net QA, try to use fsharp in place of existing codebase (ie : the setup/teardown part).&lt;/li&gt;
   &lt;li&gt;The flow to produce scripts is more efficient by always checking that the code is working.&lt;/li&gt;
   &lt;li&gt;It is a good way to learn fsharp and function programming step by step.&lt;/li&gt;
-&lt;/ul&gt;</content><summary type="html">As a QA, you have to write/maintain some code in order to automate your activities.
-This activity is the same dev activity but… How do you test your code ?</summary><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://cboudereau.github.io//images/inception.jpg" /></entry><entry><title type="html">Why we use fsharp data in prod</title><link href="https://cboudereau.github.io//fsharp/data/prod/2017/08/18/why-we-use-fsharp-data-in-prod.html" rel="alternate" type="text/html" title="Why we use fsharp data in prod" /><published>2017-08-18T13:04:00+02:00</published><updated>2017-08-18T13:04:00+02:00</updated><id>https://cboudereau.github.io//fsharp/data/prod/2017/08/18/why-we-use-fsharp-data-in-prod</id><content type="html" xml:base="https://cboudereau.github.io//fsharp/data/prod/2017/08/18/why-we-use-fsharp-data-in-prod.html">&lt;p&gt;I am currently working at a company that deal with hundreds of connectivities (apps protocol and domain adapters + big data).&lt;/p&gt;
+&lt;/ul&gt;</content><author><name></name></author><summary type="html">As a QA, you have to write/maintain some code in order to automate your activities. This activity is the same dev activity but… How do you test your code ?</summary><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="/images/inception.jpg" /></entry><entry><title type="html">Why we use fsharp data in prod</title><link href="/fsharp/data/prod/2017/08/18/why-we-use-fsharp-data-in-prod.html" rel="alternate" type="text/html" title="Why we use fsharp data in prod" /><published>2017-08-18T13:04:00+02:00</published><updated>2017-08-18T13:04:00+02:00</updated><id>/fsharp/data/prod/2017/08/18/why-we-use-fsharp-data-in-prod</id><content type="html" xml:base="/fsharp/data/prod/2017/08/18/why-we-use-fsharp-data-in-prod.html">&lt;p&gt;I am currently working at a company that deal with hundreds of connectivities (apps protocol and domain adapters + big data).&lt;/p&gt;
 
 &lt;p&gt;Since 2014 we have used fsharp data progressively in production (I use fsharp in prod since 2012).&lt;/p&gt;
+
+&lt;!--more--&gt;
 
 &lt;p&gt;Today we have more than 10% and 1 of the top 3 (top business, high performance) in prod plus a custom big data solution in full fsharp (the company guarantee in case of sales/stockout risk for exchanged data thanks to zmq + 7z + Azure)&lt;/p&gt;
 
@@ -157,9 +525,8 @@ It is really boring and the partner will often break their compatibility.&lt;/p&
 
 &lt;p&gt;When we build a new connector with xml linq, we have in the end a lot of method like this :&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;private static Stuff BuildStuff(XDocument responseXml, XElement name)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;private static Stuff BuildStuff(XDocument responseXml, XElement name)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;Passing &lt;code class=&quot;highlighter-rouge&quot;&gt;XElement&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;XDocument&lt;/code&gt;, any xml linq parameter does not supply the context : the what. We have constantly to dev with the sample to the right side because it is totally dynamic.&lt;/p&gt;
 
@@ -167,7 +534,7 @@ It is really boring and the partner will often break their compatibility.&lt;/p&
 
 &lt;p&gt;Here is a xml data sample (this is not a domain dependent sample) :&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&amp;lt;node&amp;gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&amp;lt;node&amp;gt;
 
 	&amp;lt;item&amp;gt;
 		&amp;lt;value&amp;gt;10&amp;lt;/value&amp;gt;
@@ -175,12 +542,11 @@ It is really boring and the partner will often break their compatibility.&lt;/p&
 	&amp;lt;value&amp;gt;100&amp;lt;/value&amp;gt;
 
 &amp;lt;/node&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;the associated code that get all values:&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;class Program
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;class Program
 {
 	private static IEnumerable&amp;lt;decimal&amp;gt; Values(XElement x)
 	{
@@ -202,8 +568,7 @@ It is really boring and the partner will often break their compatibility.&lt;/p&
 		Console.ReadLine();
 	}
 }
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;When the data is bigger, the number of this kind of method is also bigger you have to analyse the usage of the method to understand the context.&lt;/p&gt;
 
@@ -218,7 +583,7 @@ It is really boring and the partner will often break their compatibility.&lt;/p&
 &lt;/blockquote&gt;
 
 &lt;p&gt;Here is a version with the XmlProvider of &lt;a href=&quot;http://fsharp.github.io/FSharp.Data/&quot;&gt;Fsharp.Data&lt;/a&gt; :&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;#r @&quot;..\packages\FSharp.Data\lib\net40\FSharp.Data.dll&quot;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;#r @&quot;..\packages\FSharp.Data\lib\net40\FSharp.Data.dll&quot;
 #r &quot;System.Xml.Linq&quot;
 
 open FSharp.Data
@@ -240,8 +605,7 @@ printfn &quot;from root&quot;
 printfn &quot;%i&quot; (node.Value)
 printfn &quot;from item&quot;
 printfn &quot;%i&quot; (node.Item.Value)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;blockquote&gt;
   &lt;p&gt;In this version, there is no need to build a function to extract and parse the value.
@@ -286,7 +650,7 @@ If there is a cardinality problem it is really hard to see how it impacts the bu
   &lt;li&gt;What about changes that we don’t need :&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;#r @&quot;..\packages\FSharp.Data\lib\net40\FSharp.Data.dll&quot;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;#r @&quot;..\packages\FSharp.Data\lib\net40\FSharp.Data.dll&quot;
 #r &quot;System.Xml.Linq&quot;
 
 open FSharp.Data
@@ -294,23 +658,21 @@ open FSharp.Data
 type Node = XmlProvider&amp;lt; &quot;&quot;&quot;&amp;lt;root&amp;gt;&amp;lt;code&amp;gt;ABC&amp;lt;/code&amp;gt;&amp;lt;id&amp;gt;50&amp;lt;/id&amp;gt;&amp;lt;/root&amp;gt;&quot;&quot;&quot; &amp;gt;
 
 let node = Node.Parse(&quot;&quot;&quot;&amp;lt;root&amp;gt;&amp;lt;code&amp;gt;ABC&amp;lt;/code&amp;gt;&amp;lt;/root&amp;gt;&quot;&quot;&quot;)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;blockquote&gt;
   &lt;p&gt;Note that the supplied xml to parse method does not have an id element (runtime and design time are different)&lt;/p&gt;
 &lt;/blockquote&gt;
 
 &lt;p&gt;The interactive display :&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Code : ABC
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Code : ABC
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;ul&gt;
   &lt;li&gt;Breaking changes at runtime (when the partner break things directly in prod : data differ from the spec at runtime)&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;#r @&quot;..\packages\FSharp.Data\lib\net40\FSharp.Data.dll&quot;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;#r @&quot;..\packages\FSharp.Data\lib\net40\FSharp.Data.dll&quot;
 #r &quot;System.Xml.Linq&quot;
 
 open FSharp.Data
@@ -320,13 +682,11 @@ type Node = XmlProvider&amp;lt; &quot;&quot;&quot;&amp;lt;root&amp;gt;&amp;lt;co
 let node = Node.Parse(&quot;&quot;&quot;&amp;lt;root&amp;gt;&amp;lt;code&amp;gt;ABC&amp;lt;/code&amp;gt;&amp;lt;/root&amp;gt;&quot;&quot;&quot;)
 
 printfn &quot;Id : %i&quot; (node.Id)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;The code compiles but there was a problem at runtime :&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;System.Exception: XML mismatch: Expected exactly one 'id' child, got 0
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;System.Exception: XML mismatch: Expected exactly one 'id' child, got 0
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;blockquote&gt;
   &lt;p&gt;For this case, you should consider logging this error with the associated data.&lt;/p&gt;
@@ -336,7 +696,7 @@ printfn &quot;Id : %i&quot; (node.Id)
   &lt;li&gt;Breaking changes on legacy code (quick fix) :&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;#r @&quot;..\packages\FSharp.Data\lib\net40\FSharp.Data.dll&quot;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;#r @&quot;..\packages\FSharp.Data\lib\net40\FSharp.Data.dll&quot;
 #r &quot;System.Xml.Linq&quot;
 
 open FSharp.Data
@@ -346,8 +706,7 @@ type Node = XmlProvider&amp;lt; &quot;&quot;&quot;&amp;lt;root&amp;gt;&amp;lt;co
 let node = Node.Parse(&quot;&quot;&quot;&amp;lt;root&amp;gt;&amp;lt;code&amp;gt;ABC&amp;lt;/code&amp;gt;&amp;lt;/root&amp;gt;&quot;&quot;&quot;)
 
 printfn &quot;Id : %i&quot; (node.Id)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;blockquote&gt;
   &lt;p&gt;Note that the required Id (used by the printfn) has been removed from the given sample&lt;/p&gt;
@@ -359,7 +718,7 @@ printfn &quot;Id : %i&quot; (node.Id)
   &lt;li&gt;When you have to support multiple versions&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;#r @&quot;..\packages\FSharp.Data\lib\net40\FSharp.Data.dll&quot;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;#r @&quot;..\packages\FSharp.Data\lib\net40\FSharp.Data.dll&quot;
 #r &quot;System.Xml.Linq&quot;
 open FSharp.Data
 
@@ -393,8 +752,7 @@ let nodeNew = Node.Parse(&quot;&quot;&quot;&amp;lt;root&amp;gt;&amp;lt;productco
 
 prettyprint nodeLegacy
 prettyprint nodeNew
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;blockquote&gt;
   &lt;p&gt;I have added the 2 versions in the samples of the XmlProvider by adding a new &lt;samples&gt; root node and the SampleIsList to true parameter. In that case, the XmlProvider skip the first element and consider many child elements to be processed.&lt;/samples&gt;&lt;/p&gt;
@@ -427,9 +785,10 @@ prettyprint nodeNew
   &lt;li&gt;The proof of concept code could be reused (better than extracting linqpad code and import to existing + cover code build after unit test)&lt;/li&gt;
   &lt;li&gt;The language ML syntax provide a better way to avoid NRE (Null Reference Exception) when you only deal with fsharp. There is Option.ofObj adapters when object came from csharp.&lt;/li&gt;
   &lt;li&gt;We have started another experience and made our adaptation of the interval valued in full fsharp &lt;a href=&quot;https://github.com/cboudereau/Outatime&quot;&gt;Outatime&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;</content><summary type="html">I am currently working at a company that deal with hundreds of connectivities (apps protocol and domain adapters + big data).</summary><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://cboudereau.github.io//images/fsharpdata.jpg" /></entry><entry><title type="html">How to parse a proto3 message with FParsec</title><link href="https://cboudereau.github.io//fsharp/parser/combinator/fparsec/proto3/2017/08/10/proto3-parser.html" rel="alternate" type="text/html" title="How to parse a proto3 message with FParsec" /><published>2017-08-10T13:13:00+02:00</published><updated>2017-08-10T13:13:00+02:00</updated><id>https://cboudereau.github.io//fsharp/parser/combinator/fparsec/proto3/2017/08/10/proto3-parser</id><content type="html" xml:base="https://cboudereau.github.io//fsharp/parser/combinator/fparsec/proto3/2017/08/10/proto3-parser.html">&lt;p&gt;I would like to try &lt;a href=&quot;http://www.quanttec.com/fparsec/&quot;&gt;FParsec&lt;/a&gt; fsharp parser to parse proto3 message.&lt;/p&gt;
+&lt;/ul&gt;</content><author><name></name></author><summary type="html">I am currently working at a company that deal with hundreds of connectivities (apps protocol and domain adapters + big data). Since 2014 we have used fsharp data progressively in production (I use fsharp in prod since 2012).</summary><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="/images/fsharpdata.jpg" /></entry><entry><title type="html">How to parse a proto3 message with FParsec</title><link href="/fsharp/parser/combinator/fparsec/proto3/2017/08/10/proto3-parser.html" rel="alternate" type="text/html" title="How to parse a proto3 message with FParsec" /><published>2017-08-10T13:13:00+02:00</published><updated>2017-08-10T13:13:00+02:00</updated><id>/fsharp/parser/combinator/fparsec/proto3/2017/08/10/proto3-parser</id><content type="html" xml:base="/fsharp/parser/combinator/fparsec/proto3/2017/08/10/proto3-parser.html">&lt;p&gt;I would like to try &lt;a href=&quot;http://www.quanttec.com/fparsec/&quot;&gt;FParsec&lt;/a&gt; fsharp parser to parse proto3 message.&lt;/p&gt;
 
-&lt;p&gt;I used this &lt;a href=&quot;http://www.quanttec.com/fparsec/&quot;&gt;FParsec&lt;/a&gt; &lt;a href=&quot;http://www.quanttec.com/fparsec/tutorial.html#parsing-json&quot;&gt;tutorial&lt;/a&gt; first in order to be more familiar with this library.&lt;/p&gt;
+&lt;p&gt;I used this &lt;a href=&quot;http://www.quanttec.com/fparsec/&quot;&gt;FParsec&lt;/a&gt; &lt;a href=&quot;http://www.quanttec.com/fparsec/tutorial.html#parsing-json&quot;&gt;tutorial&lt;/a&gt; first in order to be more familiar with this library.
+&lt;!--more--&gt;&lt;/p&gt;
 
 &lt;h2 id=&quot;disclaimer&quot;&gt;Disclaimer&lt;/h2&gt;
 &lt;blockquote&gt;
@@ -444,7 +803,7 @@ proto3 specification is &lt;a href=&quot;https://developers.google.com/protocol-
 
 &lt;p&gt;To start, I will use this first sample and make step by step all parsers to get the type info in this structure :&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;type Type = 
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;type Type = 
     | Scalar of string
     | Custom of string
 
@@ -461,12 +820,11 @@ type Field =
 type Message = 
     { Name : string
       Fields : Field list } 
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;Here is the sample that we will use all along this post :&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    message CalculateInfo {
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    message CalculateInfo {
     required string CalStarttime=1;
     optional string CalEndtime=2;
     required string Smiles=3;
@@ -482,13 +840,12 @@ type Message =
         required bool  isSuccessful = 1;
         required int32 Count=2;
         repeated CalculateInfo History=3; }
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;h2 id=&quot;lets-go-&quot;&gt;Lets go !&lt;/h2&gt;
 &lt;p&gt;The FParsec references (I will write with REPL style, so I will use a .fsx).&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;#I __SOURCE_DIRECTORY__
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;#I __SOURCE_DIRECTORY__
 #r &quot;packages/FParsec/lib/net40-client/FParsecCS.dll&quot;
 #r &quot;packages/FParsec/lib/net40-client/FParsec.dll&quot;
 #r &quot;System.Core.dll&quot;
@@ -497,19 +854,17 @@ type Message =
 #r &quot;System.Numerics.dll&quot;
 
 open FParsec
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;h2 id=&quot;step-1--extracting-the-name-of-the-message&quot;&gt;Step 1 : extracting the name of the message&lt;/h2&gt;
 &lt;p&gt;In our case we want to extract the first message name : CalculateInfo&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let msgSample = &quot;message CalculateInfo {&quot;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let msgSample = &quot;message CalculateInfo {&quot;
 
 let pMessage = spaces &amp;gt;&amp;gt;. pstringCI &quot;message&quot; &amp;gt;&amp;gt;. spaces &amp;gt;&amp;gt;. (noneOf &quot;{ &quot; |&amp;gt; manyChars) 
 
 run pMessage msgSample
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;The pMessage function will :&lt;/p&gt;
 &lt;ul&gt;
@@ -521,36 +876,32 @@ run pMessage msgSample
 
 &lt;p&gt;The interactive will print this result :&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;val it : ParserResult&amp;lt;string,unit&amp;gt; = Success: &quot;CalculateInfo&quot;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;val it : ParserResult&amp;lt;string,unit&amp;gt; = Success: &quot;CalculateInfo&quot;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;h2 id=&quot;step-2--parse-1-field&quot;&gt;Step 2 : Parse 1 field&lt;/h2&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let fieldSample = &quot;required string CalStarttime=1&quot;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let fieldSample = &quot;required string CalStarttime=1&quot;
 
 let fieldSpec f t n i = f { FieldSpec.Id=i; Type=t; Name=n }
 let pRequired = stringCIReturn &quot;required&quot; (fieldSpec Required)
 
 run pRequired fieldSample
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;The pRequired will parse the word (case insensitive) required and return the fieldSpec with the parameter Required.
 Let see the fieldSpec func : f parameter could be one of the choice defined into the type :&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;type Field = 
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;type Field = 
     | Required of FieldSpec
     | Optional of FieldSpec
     | Repeated of FieldSpec
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;When we look at the proto3 field definition we will parse in order :&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;required string CalStarttime=1
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;required string CalStarttime=1
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 &lt;p&gt;1/ Field rule
 2/ Type
 3/ Name 
@@ -560,7 +911,7 @@ Let see the fieldSpec func : f parameter could be one of the choice defined into
 
 &lt;p&gt;Let just adapt the parser in order to parse the field rules optional or repeated :&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let ws = pchar ' ' |&amp;gt; manyChars |&amp;gt;&amp;gt; ignore
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let ws = pchar ' ' |&amp;gt; manyChars |&amp;gt;&amp;gt; ignore
 
 let fieldSample = &quot;required string CalStarttime=1&quot;
 
@@ -573,8 +924,7 @@ let pField = ws &amp;gt;&amp;gt;. (pRequired &amp;lt;|&amp;gt; pOptional &amp;lt
 run pField &quot;required string CalStarttime=1&quot; //Success: &amp;lt;fun:pRequired@40-8&amp;gt;
 run pField &quot;repeated string CalStarttime=1&quot; //Success: &amp;lt;fun:pRepeated@42-6&amp;gt;
 run pField &quot;optional string CalStarttime=1&quot; //Success: &amp;lt;fun:pOptional@41-6&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;We can see that the orElse operator &lt;code class=&quot;highlighter-rouge&quot;&gt;&amp;lt;|&amp;gt;&lt;/code&gt; return the parser corresponding to the field rule (optional, required, repeated).&lt;/p&gt;
 
@@ -587,7 +937,7 @@ run pField &quot;optional string CalStarttime=1&quot; //Success: &amp;lt;fun:pOp
 &lt;p&gt;We will first parse the scalar type.
 The code is a little bit boring, the most interesting part is the parser function :&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;module ScalarType = 
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;module ScalarType = 
     let private mapping = 
         [ &quot;double&quot;,  typeof&amp;lt;double&amp;gt;
           &quot;float&quot;,   typeof&amp;lt;float&amp;gt;
@@ -613,8 +963,7 @@ The code is a little bit boring, the most interesting part is the parser functio
         |&amp;gt; Seq.fold (&amp;lt;|&amp;gt;) pzero
 		
 run ScalarType.parser &quot;double&quot; //ParserResult&amp;lt;string,unit&amp;gt; = Success: &quot;double&quot;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;The parser function aim :&lt;/p&gt;
 &lt;ul&gt;
@@ -629,7 +978,7 @@ This is exactly what we want when we would like to fold the sequence of parsers 
 
 &lt;p&gt;What is displayed if there was an error ?&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;run ScalarType.parser &quot;hello&quot; (*val it : ParserResult&amp;lt;string,unit&amp;gt; =
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;run ScalarType.parser &quot;hello&quot; (*val it : ParserResult&amp;lt;string,unit&amp;gt; =
   Failure:
 Error in Ln: 1 Col: 1
 hello
@@ -637,14 +986,13 @@ hello
 Expecting: 'bool', 'bytes', 'double', 'fixed32', 'fixed64', 'float', 'int32',
 'int64', 'sfixed32', 'sfixed64', 'sint32', 'sint64', 'string', 'uint32' or
 'uint64'*)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;Hey! not bad!&lt;/p&gt;
 
 &lt;p&gt;If it is not a scalar type, it is a custom type :&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let pWord = (&amp;lt;&amp;gt;) ' ' |&amp;gt; satisfy |&amp;gt; manyChars
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let pWord = (&amp;lt;&amp;gt;) ' ' |&amp;gt; satisfy |&amp;gt; manyChars
 
 let pType = 
     (ScalarType.parser |&amp;gt;&amp;gt; Scalar)
@@ -652,11 +1000,10 @@ let pType =
 	
 run pType &quot;hello&quot; //ParserResult&amp;lt;Type,unit&amp;gt; = Success: Custom &quot;hello&quot;
 
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;There is only the name and identifier missed to build the full field parser, so here is the full code of the field parser :&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let (&amp;lt;*&amp;gt;) f x = f &amp;gt;&amp;gt;= fun f' -&amp;gt; x &amp;gt;&amp;gt;= fun x' -&amp;gt; preturn (f' x')
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let (&amp;lt;*&amp;gt;) f x = f &amp;gt;&amp;gt;= fun f' -&amp;gt; x &amp;gt;&amp;gt;= fun x' -&amp;gt; preturn (f' x')
 
 let pField = 
     let fieldSpec f t n i = f { Id=i; Type=t; Name=n }
@@ -671,30 +1018,27 @@ let pField =
     pField &amp;lt;*&amp;gt; (ws &amp;gt;&amp;gt;. pType) &amp;lt;*&amp;gt; (ws &amp;gt;&amp;gt;. pName) &amp;lt;*&amp;gt; pId
 
 run pField &quot;required string CalStarttime=1&quot; 
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;The result will be :&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;val it : ParserResult&amp;lt;Field,unit&amp;gt; =
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;val it : ParserResult&amp;lt;Field,unit&amp;gt; =
   Success: Required {Id = 1;
           Type = Scalar &quot;string&quot;;
           Name = &quot;CalStarttime&quot;;}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;Now we have to build a fields parser that parse multiple field !&lt;/p&gt;
 
 &lt;h2 id=&quot;step-3--parsing-n-fields&quot;&gt;Step 3 : Parsing n Fields&lt;/h2&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let pFields = spaces &amp;gt;&amp;gt;. sepEndBy pField (spaces &amp;gt;&amp;gt;. pchar ';' .&amp;gt;&amp;gt; spaces)
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let pFields = spaces &amp;gt;&amp;gt;. sepEndBy pField (spaces &amp;gt;&amp;gt;. pchar ';' .&amp;gt;&amp;gt; spaces)
 
 run pFields &quot;&quot;&quot;required string CalStarttime=1;optional string CalEndtime=2&quot;&quot;&quot;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;with more samples :&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;run pFields &quot;&quot;&quot;required string CalStarttime=1; optional string CalEndtime=2;&quot;&quot;&quot;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;run pFields &quot;&quot;&quot;required string CalStarttime=1; optional string CalEndtime=2;&quot;&quot;&quot;
 run pFields &quot;&quot;&quot;required string CalStarttime=1 ; optional string CalEndtime=2;&quot;&quot;&quot;
 run pFields &quot;&quot;&quot;
 required string CalStarttime=1 ; optional string CalEndtime=2;&quot;&quot;&quot;
@@ -725,13 +1069,12 @@ run pFields &quot;&quot;&quot;
     optional string CalEndtime=2;
     
     &quot;&quot;&quot;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;h2 id=&quot;step-final--the-full-parser&quot;&gt;Step final : the full parser&lt;/h2&gt;
 &lt;p&gt;And now we have to combine pFields + pMessge together!&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let message name fields = { Fields=fields; Name=name }
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let message name fields = { Fields=fields; Name=name }
 
 let pProtoMessage = pMessage |&amp;gt;&amp;gt; message .&amp;gt;&amp;gt; spaces .&amp;gt;&amp;gt; pchar '{' .&amp;gt;&amp;gt; spaces &amp;lt;*&amp;gt; pFields .&amp;gt;&amp;gt; spaces .&amp;gt;&amp;gt; pchar '}'
 
@@ -755,23 +1098,24 @@ run pProtos &quot;&quot;&quot;
         required int32 Count=2;
         repeated CalculateInfo History=3; }
 &quot;&quot;&quot;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;And the final result of our parser!&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;val it : ParserResult&amp;lt;Field list,unit&amp;gt; =
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;val it : ParserResult&amp;lt;Field list,unit&amp;gt; =
   Success: [Required {Id = 1;
            Type = Scalar &quot;string&quot;;
            Name = &quot;CalStarttime&quot;;}; Optional {Id = 2;
                                               Type = Scalar &quot;string&quot;;
                                               Name = &quot;CalEndtime&quot;;}]
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;Finally, we see step by step how to deal with FParsec to build and compose parser together by building a full proto message parser.
-This parser could be composed with an enum parser. The enum parser could reuse the internal message parser, and so on…&lt;/p&gt;</content><summary type="html">I would like to try FParsec fsharp parser to parse proto3 message.</summary></entry><entry><title type="html">Parser Combinator in real life</title><link href="https://cboudereau.github.io//fsharp,/parser/combinator/2017/08/09/why-parser.html" rel="alternate" type="text/html" title="Parser Combinator in real life" /><published>2017-08-09T13:14:01+02:00</published><updated>2017-08-09T13:14:01+02:00</updated><id>https://cboudereau.github.io//fsharp,/parser/combinator/2017/08/09/why-parser</id><content type="html" xml:base="https://cboudereau.github.io//fsharp,/parser/combinator/2017/08/09/why-parser.html">&lt;p&gt;I had to write an application that handle 2200 msg per second. 
+This parser could be composed with an enum parser. The enum parser could reuse the internal message parser, and so on…&lt;/p&gt;</content><author><name></name></author><summary type="html">I would like to try FParsec fsharp parser to parse proto3 message. I used this FParsec tutorial first in order to be more familiar with this library.</summary></entry><entry><title type="html">Parser Combinator in real life</title><link href="/fsharp,/parser/combinator/2017/08/09/why-parser.html" rel="alternate" type="text/html" title="Parser Combinator in real life" /><published>2017-08-09T13:14:01+02:00</published><updated>2017-08-09T13:14:01+02:00</updated><id>/fsharp,/parser/combinator/2017/08/09/why-parser</id><content type="html" xml:base="/fsharp,/parser/combinator/2017/08/09/why-parser.html">&lt;p&gt;I had to write an application that handle 2200 msg per second. 
 This application consist of indexing and compress data with 7z.&lt;/p&gt;
+
+&lt;p&gt;And here is why I use a parser combinator.
+&lt;!--more--&gt;&lt;/p&gt;
 
 &lt;blockquote&gt;
   &lt;p&gt;I will write another post for the usage of the awesome &lt;a href=&quot;https://github.com/zeromq/fszmq&quot;&gt;fszmq&lt;/a&gt; and a custom interop of 7z in a later post.&lt;/p&gt;
@@ -810,19 +1154,17 @@ Those 2 elements could have more than 10MB and I don’t want to load this kind 
 
 &lt;p&gt;An Id could be represent as&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&amp;lt;root&amp;gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&amp;lt;root&amp;gt;
 &amp;lt;Id&amp;gt;1&amp;lt;/Id&amp;gt;
 &amp;lt;Request&amp;gt;Big Data here !&amp;lt;/Request&amp;gt;
 &amp;lt;Response&amp;gt;Big Data here !&amp;lt;/Response&amp;gt;
 &amp;lt;/root&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&amp;lt;root&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&amp;lt;root&amp;gt;
 &amp;lt;Id&amp;gt;0&amp;lt;/Id&amp;gt;
 &amp;lt;items&amp;gt;&amp;lt;item&amp;gt;&amp;lt;Id&amp;gt;1&amp;lt;/Id&amp;gt;&amp;lt;Request&amp;gt;Big Data here !&amp;lt;/Request&amp;gt;&amp;lt;Response&amp;gt;Big Data here !&amp;lt;/Response&amp;gt;&amp;lt;/item&amp;gt;&amp;lt;/items&amp;gt;
 &amp;lt;/root&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;I remember how Linq and FSharp.Data were very usefull in this case but for the performance reason it is not ok!&lt;/p&gt;
 
@@ -839,22 +1181,20 @@ The solution should offer a maximum of flexibility to compose things together&lt
 
 &lt;p&gt;I would like to express code like this :&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;type Entry = { Id:string } 
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;type Entry = { Id:string } 
 let convert message = 
 	use reader = XmlReader.Create(message:Stream)
 	let entry id = { Id=id }
 	let entryP = ffwd &quot;Id&quot; &amp;gt;&amp;gt;. element (id &amp;gt;&amp;gt; Ok) &quot;Id&quot;
 	run reader entryP
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;The Parser type that wrap the parser function.
 The aim of parser function is like an interface but instead it hide the context and error types&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;type Parser&amp;lt;'x, 'a&amp;gt; = Parser of ('x -&amp;gt; Result&amp;lt;'a, string list&amp;gt;) 
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;type Parser&amp;lt;'x, 'a&amp;gt; = Parser of ('x -&amp;gt; Result&amp;lt;'a, string list&amp;gt;) 
 let run context (Parser p) = p context
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;Where ‘x could be the XmlReader and the run function that just unwrap the parser function and apply the given context.&lt;/p&gt;
 
@@ -866,14 +1206,13 @@ If you understand the meaning of the point you should intuitively understand tha
 
 &lt;p&gt;the full parser code based on XmlReader&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;type Parser&amp;lt;'x, 'a&amp;gt; = Parser of ('x -&amp;gt; Result&amp;lt;'a, string list&amp;gt;) 
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;type Parser&amp;lt;'x, 'a&amp;gt; = Parser of ('x -&amp;gt; Result&amp;lt;'a, string list&amp;gt;) 
 
 //The code is based on the latest fsharp 4.1 (install vs2017 + fsharp 4.1 for eg)
 open Result
 
 let run context (Parser p) = p context
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;Define a map function that&lt;/p&gt;
 &lt;ul&gt;
@@ -882,7 +1221,7 @@ let run context (Parser p) = p context
   &lt;li&gt;Stop if there is an error and do not apply f (show the error string list for exemple)&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let map f x = 
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let map f x = 
     fun reader -&amp;gt;
         match run reader x with
         | Ok x' -&amp;gt; f x' |&amp;gt; Ok
@@ -890,8 +1229,7 @@ let run context (Parser p) = p context
     |&amp;gt; Parser
 
 let (&amp;lt;!&amp;gt;) = map
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;Define an apply function that do&lt;/p&gt;
 &lt;ul&gt;
@@ -900,7 +1238,7 @@ let (&amp;lt;!&amp;gt;) = map
   &lt;li&gt;Like map stop on error&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let apply f x = 
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let apply f x = 
     fun reader -&amp;gt;
         match run reader f, run reader x with
         | Ok f', Ok x' -&amp;gt; Ok (f' x')
@@ -908,8 +1246,7 @@ let (&amp;lt;!&amp;gt;) = map
     |&amp;gt; Parser
 
 let (&amp;lt;*&amp;gt;) = apply
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;The famous so called “combinator” function that&lt;/p&gt;
 
@@ -917,7 +1254,7 @@ let (&amp;lt;*&amp;gt;) = apply
   &lt;li&gt;Parse x and y in sequence and return one or both depending on the “.” on operator&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;/// return y result if x and y are Ok in sequence
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;/// return y result if x and y are Ok in sequence
 let (&amp;gt;&amp;gt;.) x y = 
     fun reader -&amp;gt;
         match run reader x with
@@ -946,13 +1283,12 @@ let (.&amp;gt;&amp;gt;.) x y =
             | Error e -&amp;gt; Error e
         | Error e -&amp;gt; Error e
     |&amp;gt; Parser
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;The aim of many function is like an unfold on List, 
 so while there is no error aggregate result to a list and return the list on the first error&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let many x = 
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let many x = 
     fun reader -&amp;gt;
         List.unfold 
             &amp;lt;| fun reader -&amp;gt; match run reader x with Ok x' -&amp;gt; Some (x', reader) | Error _ -&amp;gt; None
@@ -960,13 +1296,12 @@ so while there is no error aggregate result to a list and return the list on the
         |&amp;gt; Ok
 
    |&amp;gt; Parser
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;The orElse combinator is like a branch condition, if x has an error then run y.
 But if x is ok, just return x without running y&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let orElse x y = 
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let orElse x y = 
     fun reader -&amp;gt;
         match run reader x with
         | Ok x' -&amp;gt; Ok x'
@@ -977,8 +1312,7 @@ But if x is ok, just return x without running y&lt;/p&gt;
     |&amp;gt; Parser
 
 let (&amp;lt;|&amp;gt;) = orElse
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;Ok now I have the abstraction to parse any context.&lt;/p&gt;
 
@@ -986,34 +1320,31 @@ let (&amp;lt;|&amp;gt;) = orElse
 
 &lt;p&gt;The Xml helper function&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;open System.Xml
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;open System.Xml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;Hey it is xml :)&lt;/p&gt;
 
 &lt;p&gt;I Have to deal with XmlReader that confuse technical error with business error with the same way…
 So lets go to catch!&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let tryF name f (reader:XmlReader) = 
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let tryF name f (reader:XmlReader) = 
     try
         f reader
     with ex -&amp;gt; Error [sprintf &quot;expected %s got an error:\r\n%O&quot; name ex]
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;The ffwd just fast forward the XmlReader to the given name&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let ffwd name = 
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let ffwd name = 
     fun (reader:XmlReader) -&amp;gt; 
         while reader.Name &amp;lt;&amp;gt; name &amp;amp;&amp;amp; not reader.EOF &amp;amp;&amp;amp; reader.Read() do ()
         |&amp;gt; Ok
     |&amp;gt; Parser
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;The element function read the element with the given name, and apply the function f to the content&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let element f name = 
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let element f name = 
     tryF name &amp;lt;| fun reader -&amp;gt;
         reader.ReadStartElement(name)
         if reader.NodeType = XmlNodeType.Text then
@@ -1025,39 +1356,35 @@ So lets go to catch!&lt;/p&gt;
             if reader.NodeType = XmlNodeType.EndElement then reader.ReadEndElement()
             result
     |&amp;gt; Parser
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;The nested function treat the nested element case like :&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&amp;lt;item&amp;gt;...&amp;lt;/item&amp;gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&amp;lt;item&amp;gt;...&amp;lt;/item&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let nested name p = 
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let nested name p = 
     tryF name &amp;lt;| fun reader -&amp;gt;
         reader.ReadStartElement(name)
         let result = run reader p
         reader.ReadEndElement()
         result
     |&amp;gt; Parser
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;The pIgnore skip an element and return unit (very usefull with .» pIgnore or pIgnore ».)&lt;/p&gt;
 
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let pIgnore = 
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;let pIgnore = 
     fun (reader:XmlReader) -&amp;gt; 
         reader.ReadStartElement()
         reader.Skip()
         reader.ReadEndElement()
         Ok ()
     |&amp;gt; Parser 
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;h2 id=&quot;some-examples&quot;&gt;Some Examples&lt;/h2&gt;
 &lt;p&gt;A sample parser implementation :&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;open System 
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;open System 
 open System.IO
 
 type Entry = 
@@ -1128,14 +1455,13 @@ let convert (message:Stream) =
             printfn &quot;[WARN]%s\r\nXml :\r\n%s&quot; error (rawXml message)
             None
     with ex -&amp;gt; failwithf &quot;Parsing failed with error %O\r\nXml:\r\n%s&quot; ex (rawXml message)
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;I love this kind of little and composable declaration.
 Parsing is now like a Lego game!&lt;/p&gt;
 
 &lt;p&gt;The associated tests :&lt;/p&gt;
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;///Porcelain and plumbing
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;///Porcelain and plumbing
 let convertFromString x = 
     use s = new MemoryStream()
     use sw = new StreamWriter(s)
@@ -1175,8 +1501,7 @@ convertFromString &quot;&quot;&quot;
     &amp;lt;RoomId&amp;gt;0&amp;lt;/RoomId&amp;gt;
     &amp;lt;/Message&amp;gt;&amp;lt;/Transport&amp;gt;
 &quot;&quot;&quot;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;h2 id=&quot;the-pros&quot;&gt;The pros&lt;/h2&gt;
 &lt;ul&gt;
@@ -1199,5 +1524,4 @@ convertFromString &quot;&quot;&quot;
 &lt;ul&gt;
   &lt;li&gt;&lt;a href=&quot;https://fsharpforfunandprofit.com/posts/understanding-parser-combinators/&quot;&gt;Understanding Parser Combinators/Scott Wlaschin&lt;/a&gt;&lt;/li&gt;
   &lt;li&gt;&lt;a href=&quot;https://wiki.haskell.org/Monad&quot;&gt;Monad/Haskell wiki&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;</content><summary type="html">I had to write an application that handle 2200 msg per second. 
-This application consist of indexing and compress data with 7z.</summary><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://cboudereau.github.io//images/parsercombinator.png" /></entry></feed>
+&lt;/ul&gt;</content><author><name></name></author><summary type="html">I had to write an application that handle 2200 msg per second. This application consist of indexing and compress data with 7z. And here is why I use a parser combinator.</summary><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="/images/parsercombinator.png" /></entry></feed>

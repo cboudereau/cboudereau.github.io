@@ -4,11 +4,11 @@
 	html5up.net | @ajlkn
   Jekyll integration by somiibo.com
 	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
---><html>
+-->
+<html>
 	<head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 
 <title>How to reduce false negative in software testing!</title>
 <meta name="description" content="">
@@ -23,8 +23,8 @@
 <meta name="theme-color" content="#ffffff">
 
 <!-- CSS -->
-<link rel="stylesheet" href="/assets/css/main.css">
-<noscript><link rel="stylesheet" href="/assets/css/noscript.css"></noscript>
+<link rel="stylesheet" href="/assets/css/main.css" />
+<noscript><link rel="stylesheet" href="/assets/css/noscript.css" /></noscript>
 
 	</head>
 	<body class="is-loading">
@@ -49,7 +49,7 @@
 						<ul class="icons">
               <li><a href="https://twitter.com/cboudereau" class="icon fa-twitter" rel="nofollow"><span class="label">Twitter</span></a></li>
               <li><a href="https://github.com/cboudereau" class="icon fa-github" rel="nofollow"><span class="label">GitHub</span></a></li>
-              <li><a href="https://3dwarehouse.sketchup.com/user/cboudereau" class="icon" rel="nofollow"><img style="display: block" src="/images/su-logo-grid.png" absolute_url width="20px" height="20px" alt="3dwarehouse"></a></li>
+              <li><a href="https://3dwarehouse.sketchup.com/user/cboudereau" class="icon" rel="nofollow"><img style="display: block" src="/images/su-logo-grid.png" }}" " width="20px" height="20px" alt="3dwarehouse"></img></a></li>
 						</ul>
 				  </nav>
 
@@ -59,16 +59,15 @@
     				<header class="major">
       				<span class="date">23 Nov 2017</span>
       				<h1>How to reduce false negative in software testing!</h1>
-      				<p></p>
-<p>As a QA, you have to write/maintain some code in order to automate your activities.
+      				<p><p>As a QA, you have to write/maintain some code in order to automate your activities.
 This activity is the same dev activity but… How do you test your code ?</p>
 
-
+</p>
       			</header>
       			<div class="image main"><img src="/images/inception.jpg" alt=""></div>
-      			<p></p>
-<p>As a QA, you have to write/maintain some code in order to automate your activities.
-This activity is the same dev activity but… How do you test your code ?</p>
+      			<p><p>As a QA, you have to write/maintain some code in order to automate your activities.
+This activity is the same dev activity but… How do you test your code ?
+<!--more--></p>
 
 <h2 id="use-the-right-tools">Use the right tools</h2>
 
@@ -111,32 +110,26 @@ Thanks to fsharp and its REPL + scripting properties executing a part of the set
 The .fs files could be alpha tested separately into a script and exposed to csharp.</p>
 
 <p>Here is for example hard code to test :</p>
-<div class="highlighter-rouge">
-<pre class="highlight"><code>let hello = printfn "hello %s"
-</code></pre>
-</div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>let hello = printfn "hello %s"
+</code></pre></div></div>
 
 <p>You can say that testing the StandardOuput is ok, but you have to add a lots of plumbing into your code to have the benefit.
 For this kind of function calling them directly and run it into an interactive is very easy because only one test is ok to check the effect.</p>
 
-<div class="highlighter-rouge">
-<pre class="highlight"><code>hello "QA"
-</code></pre>
-</div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>hello "QA"
+</code></pre></div></div>
 
 <p>It is realy easy to press Alt+Enter and check that the function display hello QA!</p>
 
 <p>Here is what the interactive displays :</p>
 
-<div class="highlighter-rouge">
-<pre class="highlight"><code>val hello : (string -&gt; unit)
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>val hello : (string -&gt; unit)
 
 &gt;
 &gt;
 hello QA
 val it : unit = ()
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h2 id="conclusion">Conclusion</h2>
 <ul>
@@ -147,7 +140,7 @@ val it : unit = ()
   <li>The flow to produce scripts is more efficient by always checking that the code is working.</li>
   <li>It is a good way to learn fsharp and function programming step by step.</li>
 </ul>
-
+</p>
       		</section>
 
           <div class="comments-wrapper">
@@ -160,7 +153,7 @@ val it : unit = ()
                */
 
               var disqus_config = function () {
-                  this.page.url = 'https://cboudereau.github.io//fsharp/qa/scripting/2017/11/23/how-to-reduce-false-negative-in-software-testing.html';  /*Replace PAGE_URL with your page's canonical URL variable*/
+                  this.page.url = '/fsharp/qa/scripting/2017/11/23/how-to-reduce-false-negative-in-software-testing.html';  /*Replace PAGE_URL with your page's canonical URL variable*/
                   this.page.identifier = '/fsharp/qa/scripting/2017/11/23/how-to-reduce-false-negative-in-software-testing.html'; /*Replace PAGE_IDENTIFIER with your page's unique identifier variable*/
               };
 
@@ -173,10 +166,8 @@ val it : unit = ()
                   (d.head || d.body).appendChild(s);
               })();
           </script>
-          <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a>
-</noscript>
-          </div>
-<!-- /.comments-wrapper -->
+          <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+          </div><!-- /.comments-wrapper -->
           
 
 

@@ -4,11 +4,11 @@
 	html5up.net | @ajlkn
   Jekyll integration by somiibo.com
 	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
---><html>
+-->
+<html>
 	<head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 
 <title>How to parse a proto3 message with FParsec</title>
 <meta name="description" content="">
@@ -23,8 +23,8 @@
 <meta name="theme-color" content="#ffffff">
 
 <!-- CSS -->
-<link rel="stylesheet" href="/assets/css/main.css">
-<noscript><link rel="stylesheet" href="/assets/css/noscript.css"></noscript>
+<link rel="stylesheet" href="/assets/css/main.css" />
+<noscript><link rel="stylesheet" href="/assets/css/noscript.css" /></noscript>
 
 	</head>
 	<body class="is-loading">
@@ -49,7 +49,7 @@
 						<ul class="icons">
               <li><a href="https://twitter.com/cboudereau" class="icon fa-twitter" rel="nofollow"><span class="label">Twitter</span></a></li>
               <li><a href="https://github.com/cboudereau" class="icon fa-github" rel="nofollow"><span class="label">GitHub</span></a></li>
-              <li><a href="https://3dwarehouse.sketchup.com/user/cboudereau" class="icon" rel="nofollow"><img style="display: block" src="/images/su-logo-grid.png" absolute_url width="20px" height="20px" alt="3dwarehouse"></a></li>
+              <li><a href="https://3dwarehouse.sketchup.com/user/cboudereau" class="icon" rel="nofollow"><img style="display: block" src="/images/su-logo-grid.png" }}" " width="20px" height="20px" alt="3dwarehouse"></img></a></li>
 						</ul>
 				  </nav>
 
@@ -59,16 +59,17 @@
     				<header class="major">
       				<span class="date">10 Aug 2017</span>
       				<h1>How to parse a proto3 message with FParsec</h1>
-      				<p></p>
-<p>I would like to try <a href="http://www.quanttec.com/fparsec/">FParsec</a> fsharp parser to parse proto3 message.</p>
-
-
-      			</header>
-      			<div class="image main"><img src="" alt=""></div>
-      			<p></p>
-<p>I would like to try <a href="http://www.quanttec.com/fparsec/">FParsec</a> fsharp parser to parse proto3 message.</p>
+      				<p><p>I would like to try <a href="http://www.quanttec.com/fparsec/">FParsec</a> fsharp parser to parse proto3 message.</p>
 
 <p>I used this <a href="http://www.quanttec.com/fparsec/">FParsec</a> <a href="http://www.quanttec.com/fparsec/tutorial.html#parsing-json">tutorial</a> first in order to be more familiar with this library.</p>
+
+</p>
+      			</header>
+      			<div class="image main"><img src="" alt=""></div>
+      			<p><p>I would like to try <a href="http://www.quanttec.com/fparsec/">FParsec</a> fsharp parser to parse proto3 message.</p>
+
+<p>I used this <a href="http://www.quanttec.com/fparsec/">FParsec</a> <a href="http://www.quanttec.com/fparsec/tutorial.html#parsing-json">tutorial</a> first in order to be more familiar with this library.
+<!--more--></p>
 
 <h2 id="disclaimer">Disclaimer</h2>
 <blockquote>
@@ -83,8 +84,7 @@ proto3 specification is <a href="https://developers.google.com/protocol-buffers/
 
 <p>To start, I will use this first sample and make step by step all parsers to get the type info in this structure :</p>
 
-<div class="highlighter-rouge">
-<pre class="highlight"><code>type Type = 
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>type Type = 
     | Scalar of string
     | Custom of string
 
@@ -101,13 +101,11 @@ type Field =
 type Message = 
     { Name : string
       Fields : Field list } 
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Here is the sample that we will use all along this post :</p>
 
-<div class="highlighter-rouge">
-<pre class="highlight"><code>    message CalculateInfo {
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    message CalculateInfo {
     required string CalStarttime=1;
     optional string CalEndtime=2;
     required string Smiles=3;
@@ -123,14 +121,12 @@ type Message =
         required bool  isSuccessful = 1;
         required int32 Count=2;
         repeated CalculateInfo History=3; }
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h2 id="lets-go-">Lets go !</h2>
 <p>The FParsec references (I will write with REPL style, so I will use a .fsx).</p>
 
-<div class="highlighter-rouge">
-<pre class="highlight"><code>#I __SOURCE_DIRECTORY__
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#I __SOURCE_DIRECTORY__
 #r "packages/FParsec/lib/net40-client/FParsecCS.dll"
 #r "packages/FParsec/lib/net40-client/FParsec.dll"
 #r "System.Core.dll"
@@ -139,20 +135,17 @@ type Message =
 #r "System.Numerics.dll"
 
 open FParsec
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h2 id="step-1--extracting-the-name-of-the-message">Step 1 : extracting the name of the message</h2>
 <p>In our case we want to extract the first message name : CalculateInfo</p>
 
-<div class="highlighter-rouge">
-<pre class="highlight"><code>let msgSample = "message CalculateInfo {"
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>let msgSample = "message CalculateInfo {"
 
 let pMessage = spaces &gt;&gt;. pstringCI "message" &gt;&gt;. spaces &gt;&gt;. (noneOf "{ " |&gt; manyChars) 
 
 run pMessage msgSample
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>The pMessage function will :</p>
 <ul>
@@ -164,40 +157,32 @@ run pMessage msgSample
 
 <p>The interactive will print this result :</p>
 
-<div class="highlighter-rouge">
-<pre class="highlight"><code>val it : ParserResult&lt;string,unit&gt; = Success: "CalculateInfo"
-</code></pre>
-</div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>val it : ParserResult&lt;string,unit&gt; = Success: "CalculateInfo"
+</code></pre></div></div>
 
 <h2 id="step-2--parse-1-field">Step 2 : Parse 1 field</h2>
 
-<div class="highlighter-rouge">
-<pre class="highlight"><code>let fieldSample = "required string CalStarttime=1"
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>let fieldSample = "required string CalStarttime=1"
 
 let fieldSpec f t n i = f { FieldSpec.Id=i; Type=t; Name=n }
 let pRequired = stringCIReturn "required" (fieldSpec Required)
 
 run pRequired fieldSample
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>The pRequired will parse the word (case insensitive) required and return the fieldSpec with the parameter Required.
 Let see the fieldSpec func : f parameter could be one of the choice defined into the type :</p>
 
-<div class="highlighter-rouge">
-<pre class="highlight"><code>type Field = 
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>type Field = 
     | Required of FieldSpec
     | Optional of FieldSpec
     | Repeated of FieldSpec
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>When we look at the proto3 field definition we will parse in order :</p>
 
-<div class="highlighter-rouge">
-<pre class="highlight"><code>required string CalStarttime=1
-</code></pre>
-</div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>required string CalStarttime=1
+</code></pre></div></div>
 <p>1/ Field rule
 2/ Type
 3/ Name 
@@ -207,8 +192,7 @@ Let see the fieldSpec func : f parameter could be one of the choice defined into
 
 <p>Let just adapt the parser in order to parse the field rules optional or repeated :</p>
 
-<div class="highlighter-rouge">
-<pre class="highlight"><code>let ws = pchar ' ' |&gt; manyChars |&gt;&gt; ignore
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>let ws = pchar ' ' |&gt; manyChars |&gt;&gt; ignore
 
 let fieldSample = "required string CalStarttime=1"
 
@@ -221,8 +205,7 @@ let pField = ws &gt;&gt;. (pRequired &lt;|&gt; pOptional &lt;|&gt; pRepeated)
 run pField "required string CalStarttime=1" //Success: &lt;fun:pRequired@40-8&gt;
 run pField "repeated string CalStarttime=1" //Success: &lt;fun:pRepeated@42-6&gt;
 run pField "optional string CalStarttime=1" //Success: &lt;fun:pOptional@41-6&gt;
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>We can see that the orElse operator <code class="highlighter-rouge">&lt;|&gt;</code> return the parser corresponding to the field rule (optional, required, repeated).</p>
 
@@ -235,8 +218,7 @@ run pField "optional string CalStarttime=1" //Success: &lt;fun:pOptional@41-6&gt
 <p>We will first parse the scalar type.
 The code is a little bit boring, the most interesting part is the parser function :</p>
 
-<div class="highlighter-rouge">
-<pre class="highlight"><code>module ScalarType = 
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module ScalarType = 
     let private mapping = 
         [ "double",  typeof&lt;double&gt;
           "float",   typeof&lt;float&gt;
@@ -262,8 +244,7 @@ The code is a little bit boring, the most interesting part is the parser functio
         |&gt; Seq.fold (&lt;|&gt;) pzero
 		
 run ScalarType.parser "double" //ParserResult&lt;string,unit&gt; = Success: "double"
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>The parser function aim :</p>
 <ul>
@@ -278,8 +259,7 @@ This is exactly what we want when we would like to fold the sequence of parsers 
 
 <p>What is displayed if there was an error ?</p>
 
-<div class="highlighter-rouge">
-<pre class="highlight"><code>run ScalarType.parser "hello" (*val it : ParserResult&lt;string,unit&gt; =
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>run ScalarType.parser "hello" (*val it : ParserResult&lt;string,unit&gt; =
   Failure:
 Error in Ln: 1 Col: 1
 hello
@@ -287,15 +267,13 @@ hello
 Expecting: 'bool', 'bytes', 'double', 'fixed32', 'fixed64', 'float', 'int32',
 'int64', 'sfixed32', 'sfixed64', 'sint32', 'sint64', 'string', 'uint32' or
 'uint64'*)
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Hey! not bad!</p>
 
 <p>If it is not a scalar type, it is a custom type :</p>
 
-<div class="highlighter-rouge">
-<pre class="highlight"><code>let pWord = (&lt;&gt;) ' ' |&gt; satisfy |&gt; manyChars
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>let pWord = (&lt;&gt;) ' ' |&gt; satisfy |&gt; manyChars
 
 let pType = 
     (ScalarType.parser |&gt;&gt; Scalar)
@@ -303,12 +281,10 @@ let pType =
 	
 run pType "hello" //ParserResult&lt;Type,unit&gt; = Success: Custom "hello"
 
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>There is only the name and identifier missed to build the full field parser, so here is the full code of the field parser :</p>
-<div class="highlighter-rouge">
-<pre class="highlight"><code>let (&lt;*&gt;) f x = f &gt;&gt;= fun f' -&gt; x &gt;&gt;= fun x' -&gt; preturn (f' x')
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>let (&lt;*&gt;) f x = f &gt;&gt;= fun f' -&gt; x &gt;&gt;= fun x' -&gt; preturn (f' x')
 
 let pField = 
     let fieldSpec f t n i = f { Id=i; Type=t; Name=n }
@@ -323,33 +299,27 @@ let pField =
     pField &lt;*&gt; (ws &gt;&gt;. pType) &lt;*&gt; (ws &gt;&gt;. pName) &lt;*&gt; pId
 
 run pField "required string CalStarttime=1" 
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>The result will be :</p>
 
-<div class="highlighter-rouge">
-<pre class="highlight"><code>val it : ParserResult&lt;Field,unit&gt; =
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>val it : ParserResult&lt;Field,unit&gt; =
   Success: Required {Id = 1;
           Type = Scalar "string";
           Name = "CalStarttime";}
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Now we have to build a fields parser that parse multiple field !</p>
 
 <h2 id="step-3--parsing-n-fields">Step 3 : Parsing n Fields</h2>
-<div class="highlighter-rouge">
-<pre class="highlight"><code>let pFields = spaces &gt;&gt;. sepEndBy pField (spaces &gt;&gt;. pchar ';' .&gt;&gt; spaces)
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>let pFields = spaces &gt;&gt;. sepEndBy pField (spaces &gt;&gt;. pchar ';' .&gt;&gt; spaces)
 
 run pFields """required string CalStarttime=1;optional string CalEndtime=2"""
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>with more samples :</p>
 
-<div class="highlighter-rouge">
-<pre class="highlight"><code>run pFields """required string CalStarttime=1; optional string CalEndtime=2;"""
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>run pFields """required string CalStarttime=1; optional string CalEndtime=2;"""
 run pFields """required string CalStarttime=1 ; optional string CalEndtime=2;"""
 run pFields """
 required string CalStarttime=1 ; optional string CalEndtime=2;"""
@@ -380,14 +350,12 @@ run pFields """
     optional string CalEndtime=2;
     
     """
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <h2 id="step-final--the-full-parser">Step final : the full parser</h2>
 <p>And now we have to combine pFields + pMessge together!</p>
 
-<div class="highlighter-rouge">
-<pre class="highlight"><code>let message name fields = { Fields=fields; Name=name }
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>let message name fields = { Fields=fields; Name=name }
 
 let pProtoMessage = pMessage |&gt;&gt; message .&gt;&gt; spaces .&gt;&gt; pchar '{' .&gt;&gt; spaces &lt;*&gt; pFields .&gt;&gt; spaces .&gt;&gt; pchar '}'
 
@@ -411,25 +379,22 @@ run pProtos """
         required int32 Count=2;
         repeated CalculateInfo History=3; }
 """
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>And the final result of our parser!</p>
 
-<div class="highlighter-rouge">
-<pre class="highlight"><code>val it : ParserResult&lt;Field list,unit&gt; =
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>val it : ParserResult&lt;Field list,unit&gt; =
   Success: [Required {Id = 1;
            Type = Scalar "string";
            Name = "CalStarttime";}; Optional {Id = 2;
                                               Type = Scalar "string";
                                               Name = "CalEndtime";}]
-</code></pre>
-</div>
+</code></pre></div></div>
 
 <p>Finally, we see step by step how to deal with FParsec to build and compose parser together by building a full proto message parser.
 This parser could be composed with an enum parser. The enum parser could reuse the internal message parser, and so on…</p>
 
-
+</p>
       		</section>
 
           <div class="comments-wrapper">
@@ -442,7 +407,7 @@ This parser could be composed with an enum parser. The enum parser could reuse t
                */
 
               var disqus_config = function () {
-                  this.page.url = 'https://cboudereau.github.io//fsharp/parser/combinator/fparsec/proto3/2017/08/10/proto3-parser.html';  /*Replace PAGE_URL with your page's canonical URL variable*/
+                  this.page.url = '/fsharp/parser/combinator/fparsec/proto3/2017/08/10/proto3-parser.html';  /*Replace PAGE_URL with your page's canonical URL variable*/
                   this.page.identifier = '/fsharp/parser/combinator/fparsec/proto3/2017/08/10/proto3-parser.html'; /*Replace PAGE_IDENTIFIER with your page's unique identifier variable*/
               };
 
@@ -455,10 +420,8 @@ This parser could be composed with an enum parser. The enum parser could reuse t
                   (d.head || d.body).appendChild(s);
               })();
           </script>
-          <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a>
-</noscript>
-          </div>
-<!-- /.comments-wrapper -->
+          <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+          </div><!-- /.comments-wrapper -->
           
 
 

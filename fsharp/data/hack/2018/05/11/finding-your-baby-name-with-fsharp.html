@@ -1,0 +1,485 @@
+<!DOCTYPE HTML>
+<!--
+	Massively by HTML5 UP
+	html5up.net | @ajlkn
+  Jekyll integration by somiibo.com
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+
+<title>Finding your baby name with fsharp</title>
+<meta name="description" content="">
+
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/icon/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/icon/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/icon/favicon-16x16.png">
+<link rel="manifest" href="/assets/icon/manifest.json">
+<link rel="mask-icon" href="/assets/icon/safari-pinned-tab.svg" color="#5bbad5">
+<link rel="shortcut icon" href="/assets/icon/favicon.ico">
+<meta name="msapplication-config" content="/assets/icon/browserconfig.xml">
+<meta name="theme-color" content="#ffffff">
+
+<!-- CSS -->
+<link rel="stylesheet" href="/assets/css/main.css" />
+<noscript><link rel="stylesheet" href="/assets/css/noscript.css" /></noscript>
+
+	</head>
+	<body class="is-loading">
+
+		<!-- Wrapper -->
+			<div id="wrapper" class="fade-in">
+
+				<!-- Header -->
+        <header id="header">
+          <a href="/" class="logo">Yet Another Geek Blog</a>
+        </header>
+
+				<!-- Nav -->
+					<nav id="nav">
+
+            <ul class="links">
+  <li class=""><a href="/">Home</a></li>
+  <li class=""><a href="/about/">About</a></li>
+</ul>
+
+
+						<ul class="icons">
+              <li><a href="https://twitter.com/cboudereau" class="icon fa-twitter" rel="nofollow"><span class="label">Twitter</span></a></li>
+              <li><a href="https://github.com/cboudereau" class="icon fa-github" rel="nofollow"><span class="label">GitHub</span></a></li>
+              <li><a href="https://3dwarehouse.sketchup.com/user/cboudereau" class="icon" rel="nofollow"><img style="display: block" src="/images/su-logo-grid.png" }}" " width="20px" height="20px" alt="3dwarehouse"></img></a></li>
+						</ul>
+				  </nav>
+
+				<!-- Main -->
+				<div id="main">
+          <section class="post">
+    				<header class="major">
+      				<span class="date">11 May 2018</span>
+      				<h1>Finding your baby name with fsharp</h1>
+      				<p><p>First of all I am glad to have another child in my familly.</p>
+
+<p>He is my 2nd boy, so it was really hard for us to find another boy name.</p>
+
+</p>
+      			</header>
+      			<div class="image main"><img src="/images/baptiste.png" alt=""></div>
+      			<p><p>First of all I am glad to have another child in my familly.</p>
+
+<p>He is my 2nd boy, so it was really hard for us to find another boy name.
+<!--more--></p>
+
+<p>I found this french data : https://www.insee.fr/fr/statistiques/fichier/2540004/nat2016_txt.zip but there is 14596 boys names; the choice is hard!</p>
+
+<p>How to find the pretty well name for my little boy ?</p>
+
+<h2 id="the-problem">The Problem</h2>
+<p>I was using this site : https://dataaddict.fr/prenoms/ and I saw one problem : Lack of classification. 
+In spite of that point, the idea is good : to see how and when a name is used with stats.</p>
+<ul>
+  <li>I would like to see names by their properties (long, short, composed, …).</li>
+  <li>And group them phonetically</li>
+  <li>See less than 100 names in a graph of usage per year</li>
+</ul>
+
+<p>So the aim of this hack was to provide a way to reduce the amount of name that we don’t wan’t due to their caracteristics.</p>
+
+<h2 id="parsing-the-data">Parsing the data</h2>
+<p>FSharp has a fast data analytics in its core so it is just one line to parse the csv.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#r "packages/FSharp.Data/lib/net45/FSharp.Data.dll"
+
+open FSharp.Data
+
+type FirstNameStats = CsvProvider&lt; "nat2016_txt/nat2016.txt", Separators = "\t", HasHeaders=true &gt;
+
+let stats = FirstNameStats.Load("nat2016_txt/nat2016.txt")
+</code></pre></div></div>
+
+<p>Now build a function that returns all name for a given gender.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module Int32 = 
+    let tryInt x = 
+        match System.Int32.TryParse(x) with
+        | true, i -&gt; Some i
+        | _ -&gt; None
+
+type Gender = 
+    | Masculine = 1
+    | Feminine = 2
+
+module Gender = 
+    let value (s:Gender) = int s
+
+type [&lt;Struct&gt;] Year = Year of int
+type [&lt;Struct&gt;] FirstName = FirstName of string
+
+let firstNames gender = 
+    stats.Rows 
+    |&gt; Seq.choose (fun x -&gt; 
+        Int32.tryInt x.Annais 
+        |&gt; Option.bind (fun y -&gt; if x.Sexe = (gender |&gt; Gender.value) then Some (FirstName x.Preusuel, (Year y, x.Nombre)) else None) )
+
+let boys = firstNames Gender.Masculine
+
+boys |&gt; Seq.take 10 |&gt; Seq.toList
+
+(* It outputs : 
+[(FirstName "A", (Year 1980, 3)); (FirstName "A", (Year 1998, 3));
+ (FirstName "AADAM", (Year 2009, 4)); (FirstName "AADAM", (Year 2014, 3));
+ (FirstName "AADAM", (Year 2016, 4)); (FirstName "AADEL", (Year 1976, 5));
+ (FirstName "AADEL", (Year 1978, 3)); (FirstName "AADEL", (Year 1980, 3));
+ (FirstName "AADEL", (Year 1981, 5)); (FirstName "AADEL", (Year 1982, 4))]
+*)
+</code></pre></div></div>
+
+<p>Now that we have names in memory, how can I classify information and search in it ?</p>
+
+<h2 id="classify-classify-classify">Classify, classify, classify</h2>
+<p>After analysing the data, I was finding my name (Clément) when I see that there was different spelling (accent and other difference).
+To reduce the amount of duplicate phonetic match, I would like to group name by phonetic match.</p>
+
+<p>The main problem with phonetic algorithm was the lowest telerance with cross language spelling variation.</p>
+
+<p>Here is some case where I did not find the right math :</p>
+<ul>
+  <li>“Yolaine” : “Yolène”, “Yolene”</li>
+  <li>“Clément” : “Clement”, “Klement”</li>
+</ul>
+
+<p>I try with different french algorithm like Soundex and Phonex and the best one was Phonex (Good balance between redundancy and spelling variation).</p>
+
+<p>I have patched the Phonex algorithm to match the 2 cases “Yolaine” and “Clement”.</p>
+
+<p>You can check the differences <a href="https://github.com/cboudereau/firstname/commit/a2fee2492820fe59d2df928cd82473f27086fe96#diff-03d56f95fd97ac5769359687562f51e7">here</a>.</p>
+
+<p>You could see the result of my attempts to use soundex2 instead.</p>
+
+<p>Here is the patched translation in fsharp of <a href="https://github.com/Noethys/Teamworks/blob/master/source/Phonex.py">this python implementation</a>.</p>
+
+<h2 id="phonetic-hash">Phonetic Hash</h2>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module Phonex = 
+    let toLower x = (x:string).ToLower ()
+    let accentLess x = System.Text.Encoding.GetEncoding("ISO-8859-8").GetBytes(x:string) |&gt; System.Text.Encoding.UTF8.GetString
+    let replace target replacement source = (source:string).Replace((target:string), replacement)
+    let rI = replace "y" "i"
+    let rF = replace "ph" "f" 
+    let replaceAny targets replacement source = targets |&gt; List.fold (fun s t -&gt; replace t replacement s) source
+    let rCh = replaceAny ["sh"; "ch"; "sch"] "5"
+    let remove target source = replace target "" source
+    let rmH = remove "h"
+    let rmapping tr source = tr |&gt; List.fold (fun s (t,r) -&gt; replace t r s) source
+    let rGan = rmapping [ "gan", "kan"
+                          "gam", "kam"
+                          "gain", "kain"
+                          "gaim", "kaim" ]
+    let between before after replacement source target = 
+        let rec between offset source = 
+            if offset &lt; (source:string).Length then 
+                let lt = (target:string).Length
+                let tail = source.Substring(offset)
+                let idx = tail.IndexOf(target)
+                if idx &lt;&gt; -1 &amp;&amp; (before (tail.Substring(0, idx)) &amp;&amp; after(tail.Substring(idx + lt))) then
+                    sprintf "%s%s%s" (source.Substring(0, offset + idx)) replacement (tail.Substring(idx + lt, tail.Length - idx - lt))
+                    |&gt; between (idx + replacement.Length)
+                else source
+            else source
+        between 0 source
+    let all = fun _ -&gt; true
+    let suffix f replacement source target = between all f replacement source target
+    let suffixL f replacement targets source = targets |&gt; List.fold (suffix f replacement) source
+    let [&lt;Literal&gt;] Vowel = "aeiou"
+    let isVowel x = Vowel |&gt; Seq.exists ((=) x)
+    let tryIsVowel = Option.map isVowel &gt;&gt; Option.defaultValue false 
+    let tryIsNotVowel = tryIsVowel &gt;&gt; not
+    let rAin  = ["ain"; "ein"; "ain"; "eim"; "aim"] |&gt; suffixL (Seq.tryHead &gt;&gt; tryIsVowel) "en"
+    let rO = replace "eau" "o"
+    let rOua = replace "oua" "2"
+    let rEin = replaceAny ["ein";"ain";"eim";"aim"] "4"
+    let rAi = replaceAny ["ai";"ei"] "e"
+    let rEr = replace "er" "yr"
+    let rEss = replace "ess" "yss"
+    let rEt = replace "et" "yt"
+    let rAn = ["an";"am";"en";"em"] |&gt; suffixL (Seq.tryHead &gt;&gt; tryIsNotVowel) "1"
+    let rIn source = suffix (Seq.tryHead &gt;&gt; tryIsNotVowel) "4" source "in"
+    let rOn = replace "on" "1"
+    let rZ source = 
+        let isCandidate c = ['1' .. '4'] |&gt; List.append (Vowel |&gt; Seq.toList) |&gt; List.exists ((=) c)
+        let tryIsCandidate = Option.map isCandidate &gt;&gt; Option.defaultValue false
+        between (Seq.tryLast &gt;&gt; tryIsCandidate) (Seq.tryHead &gt;&gt; tryIsCandidate) "z" source "s"
+    let rE = replaceAny ["oe";"eu"] "e"
+    let rAu = replace "au" "o"
+    let rOi = replaceAny ["oi"; "oy"] "2"
+    let rOu = replace "ou" "3"
+    let rS = replaceAny ["ss";"sc"] "s"
+    let rC source = 
+        let isCandidate c = "ei" |&gt; Seq.exists ((=) c)
+        let tryIsCandidate = Seq.tryHead &gt;&gt; Option.map isCandidate &gt;&gt; Option.defaultValue false
+        suffix tryIsCandidate "s" source "c"
+    let rK = replaceAny ["c";"q";"qu";"gu"] "k"
+    let rGa = replace "ga" "ka"
+    let rGo = replace "go" "ko"
+    let rGy = replace "gy" "ky"
+    let trim letters = 
+        Seq.distinct &gt;&gt; Seq.toArray
+        &gt;&gt; fun y -&gt; 
+            let n = Array.length y - 1
+            let c = y.[n] 
+            if letters |&gt; List.exists ((=) c) then Array.take n y 
+            else y
+        &gt;&gt; System.String
+
+    let rLast =
+        rmapping [ "a","o"
+                   "d","t"
+                   "p","t"
+                   "j","g"
+                   "b","f"
+                   "v","f"
+                   "m","n" ]
+
+    let hash = 
+        toLower &gt;&gt; accentLess 
+        &gt;&gt; rI &gt;&gt; rF &gt;&gt; rCh &gt;&gt; rmH 
+        &gt;&gt; rGan &gt;&gt; rAin &gt;&gt; rO &gt;&gt; rOua
+        &gt;&gt; rEin &gt;&gt; rAi 
+        &gt;&gt; rEr &gt;&gt; rEss &gt;&gt; rEt
+        &gt;&gt; rAn &gt;&gt; rIn &gt;&gt; rOn
+        &gt;&gt; rZ &gt;&gt; rE &gt;&gt; rAu &gt;&gt; rOi &gt;&gt; rOu
+        &gt;&gt; rS &gt;&gt; rC &gt;&gt; rK &gt;&gt; rGa &gt;&gt; rGo &gt;&gt; rGy
+        &gt;&gt; rLast
+        &gt;&gt; trim ['x';'t']
+
+Phonex.hash "klement" //kl1
+Phonex.hash "clément" //kl1
+Phonex.hash "clement" //kl1
+
+Phonex.hash "clemens" //kl1s
+
+Phonex.hash "yolaine" //iolen
+Phonex.hash "yolène" //iolen
+Phonex.hash "yoléne" //iolen
+</code></pre></div></div>
+
+<p>This is not the best implementation (string allocations) but it is ok for our case. 
+I tried to use FParsec for this case but the performance was not really impressive (may be I was wrong.).
+Here is my attempt if you want to give me a better implementation : https://github.com/cboudereau/firstname/blob/master/phonex.fsx</p>
+
+<p>The main point : the function composition of the Phonex hash function</p>
+
+<ul>
+  <li>Pipeline pattern</li>
+  <li>Easy to fix</li>
+  <li>Easy to test (unit tests or integration tests)</li>
+</ul>
+
+<p>Sounds good :)</p>
+
+<h2 id="a-quick-test">A quick test</h2>
+
+<p>Now that we have the algorithm to hash phonetically names, we can write a function that reduce the amount of names!</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module Snd = 
+    let map f (x,y) = x, f y
+
+type [&lt;Struct&gt;] Phonetic = Phonetic of string
+
+let phonetic f = 
+    Seq.map (fun ((FirstName n), (y, c)) -&gt; f n |&gt; Phonetic, (y,(FirstName n,c)))
+    &gt;&gt; Seq.groupBy fst
+    &gt;&gt; Seq.map ( 
+        Snd.map (
+            Seq.map snd 
+            &gt;&gt; Seq.groupBy fst 
+            &gt;&gt; Seq.map (Snd.map (Seq.map snd)) 
+            &gt;&gt; Seq.sortBy fst))
+
+let pBoys = boys |&gt; phonetic Phonex.hash
+
+pBoys |&gt; Seq.map (Snd.map (Seq.collect snd &gt;&gt; Seq.map fst &gt;&gt; Seq.distinct &gt;&gt; Seq.toList)) |&gt; Map.ofSeq
+|&gt; Map.tryFind (Phonex.hash "Clément" |&gt; Phonetic)
+
+(*
+val it : FirstName list option =
+  Some
+    [FirstName "CLÉMENT"; FirstName "CLEMENT"; FirstName "KLEMENT";
+     FirstName "KLÉMENT"]
+*)
+</code></pre></div></div>
+
+<p>Hey not bad !</p>
+
+<p>Now we have only 7413 names to check.</p>
+
+<blockquote>
+  <p>A name has around 2 spelling.</p>
+</blockquote>
+
+<p>7413 names is still high to check names and with my wife we know what kind of name we don’t want (too long, too short, …)</p>
+
+<h2 id="phonetic-categorization">Phonetic categorization</h2>
+<p>For the next part, we will use this block of code and introduced each function.
+We can for example control the phonetic length of the name.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>module Phonetic = 
+    let value (Phonetic p) = p
+    let short = value &gt;&gt; fun p -&gt; p.Length &lt; 7
+    let little = value &gt;&gt; fun p -&gt; p.Length &lt; 3
+    let onlyComposed = value &gt;&gt; fun p -&gt; p.Contains("-")
+    let notComposed = onlyComposed &gt;&gt; not
+    let blacklist l = 
+        let bl = l |&gt; Seq.map value |&gt; Seq.toList
+        value
+        &gt;&gt; fun p -&gt; bl |&gt; List.exists ((=) p) |&gt; not
+</code></pre></div></div>
+
+<h3 id="composed-or-not-composed-">Composed or not composed ?</h3>
+<p>Depending of your choice, composed names can right down the problem quickly.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>let onlyComposed = pBoys |&gt; Seq.filter (fst &gt;&gt; Phonetic.onlyComposed) 
+onlyComposed |&gt; Seq.length //975
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>let notComposed = pBoys |&gt; Seq.filter (fst &gt;&gt; Phonetic.notComposed) 
+notComposed |&gt; Seq.length //6438
+</code></pre></div></div>
+
+<p>We choosed the not composed version :)</p>
+
+<h3 id="short-or-long-">Short or long ?</h3>
+<p>In france there is a one letter name “A”.
+We choose a not too short and not too long name for our baby (between 3 and 7 sounds) :</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>let notComposedAndShort = notComposed |&gt; Seq.filter (fst &gt;&gt; Phonetic.short)
+notComposedAndShort |&gt; Seq.length //5953
+
+let notComposedAndTooShort = notComposedAndShort |&gt; Seq.filter (fst &gt;&gt; Phonetic.little &gt;&gt; not)
+notComposedAndTooShort |&gt; Seq.length //5827
+</code></pre></div></div>
+
+<p>As usual we choose the less restrictive… :)</p>
+
+<h3 id="mixed-">Mixed ?</h3>
+<p>We want a masculine only name (ie: France could be a masculine or feminine name)</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>let pGirl = firstNames Gender.Feminine |&gt; phonetic Phonex.hash
+let onlyBoys = notComposedAndTooShort |&gt; Seq.filter (fst &gt;&gt; (Phonetic.blacklist (pGirl |&gt; Seq.map fst |&gt; Seq.toList)))
+onlyBoys |&gt; Seq.length //3752
+</code></pre></div></div>
+
+<h3 id="classic-or-not-">Classic or not ?</h3>
+<p>According to the data, a classic name is used 5000 times from the beginning of the stats (20th century).</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>let classic = onlyBoys |&gt; Seq.filter (snd &gt;&gt; Seq.collect snd &gt;&gt; Seq.sumBy snd &gt;&gt; (&lt;) 5000)
+classic |&gt; Seq.length //95
+</code></pre></div></div>
+
+<p>Now we got it : 95 names!</p>
+
+<h2 id="graph-it-">Graph it !</h2>
+<p>For this part I use XPlot.GoogleCharts that is pretty awesome for our needs.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#I "packages/Google.DataTable.Net.Wrapper/lib/"
+#I "packages/XPlot.GoogleCharts/lib/net45/"
+#r "XPlot.GoogleCharts.dll"
+open XPlot.GoogleCharts
+
+let result = classic
+
+let graph average (data:(string * seq&lt;System.DateTime*float&gt;) list) =     
+    let labels = data |&gt; List.map fst
+    let points = data |&gt; List.map snd
+    let options =
+        Options(
+            title = "Number of firstname by year and average",
+            vAxis = Axis(title = "Count"),
+            hAxis = Axis(title = "Year"),
+            series =
+                [|
+                    yield Series(``type`` = "lines")
+                    yield! labels |&gt; Seq.map (fun _ -&gt; Series(``type`` = "bars"))
+                |]
+        )
+ 
+    (average :: points)
+    |&gt; Chart.Combo
+    |&gt; Chart.WithOptions options
+    |&gt; Chart.WithLabels ("Average" :: labels)
+    |&gt; Chart.Show
+
+let average = 
+    Seq.collect (snd &gt;&gt; Seq.map (Snd.map (Seq.sumBy snd)))
+    &gt;&gt; Seq.groupBy fst
+    &gt;&gt; Seq.map (fun (Year y,c) -&gt; System.DateTime(y,1,1), c |&gt; Seq.averageBy (snd &gt;&gt; float))
+    &gt;&gt; Seq.sortBy fst
+    &gt;&gt; Seq.toList
+
+let datas = 
+    Seq.map (fun (_, s) -&gt;
+        let mostUsedName = s |&gt; Seq.collect snd |&gt; Seq.sortByDescending snd |&gt; Seq.map fst |&gt; Seq.head
+        mostUsedName, s |&gt; Seq.map (Snd.map (Seq.sumBy snd)))
+    &gt;&gt; Seq.map (fun (FirstName n, s) -&gt; n, s |&gt; Seq.map (fun (Year y, c) -&gt; System.DateTime(y,1,1), float c) |&gt; Seq.sortBy fst)
+
+let av = average result
+
+datas result |&gt; Seq.toList |&gt; graph av
+</code></pre></div></div>
+<h2 id="final-result">Final Result</h2>
+<p><img src="/images/namestats.png" alt="Final result" /></p>
+
+<p>You can checkout the code <a href="https://github.com/cboudereau/firstname/blob/master/blog.fsx">here</a>.</p>
+
+<p>The name of my little boy is : Baptiste</p>
+
+<h2 id="conclusion">Conclusion</h2>
+<p>I guess we could analyse the keyword of baby name descriptions from Internet and then categorize them into a graph and navigate inside. 
+It would be nice! If you done it, do not hesitate to contact me!</p>
+</p>
+      		</section>
+
+          <div class="comments-wrapper">
+          
+          <div id="disqus_thread"></div>
+          <script>
+              /**
+               *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+               *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+               */
+
+              var disqus_config = function () {
+                  this.page.url = '/fsharp/data/hack/2018/05/11/finding-your-baby-name-with-fsharp.html';  /*Replace PAGE_URL with your page's canonical URL variable*/
+                  this.page.identifier = '/fsharp/data/hack/2018/05/11/finding-your-baby-name-with-fsharp.html'; /*Replace PAGE_IDENTIFIER with your page's unique identifier variable*/
+              };
+
+              (function() {  /* dont endit below this line */
+                  var d = document, s = d.createElement('script');
+
+                  s.src = 'https://yagb.disqus.com/embed.js';
+
+                  s.setAttribute('data-timestamp', +new Date());
+                  (d.head || d.body).appendChild(s);
+              })();
+          </script>
+          <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+          </div><!-- /.comments-wrapper -->
+          
+
+
+					</div>
+
+			</div>
+
+      <!-- Scripts -->
+  		<!-- DYN -->
+<script src="/assets/js/jquery.min.js"></script>
+<script src="/assets/js/jquery.scrollex.min.js"></script>
+<script src="/assets/js/jquery.scrolly.min.js"></script>
+<script src="/assets/js/skel.min.js"></script>
+<script src="/assets/js/util.js"></script>
+<script src="/assets/js/main.js"></script>
+
+
+	</body>
+</html>

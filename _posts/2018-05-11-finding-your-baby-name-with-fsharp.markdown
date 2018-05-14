@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Finding your baby name with fsharp"
-date:   2017-12-24 12:29:00 +0100
+date:   2018-05-11 07:23:10 +0100
 categories: fsharp data hack
 image: "/images/baptiste.png"
 comments: true

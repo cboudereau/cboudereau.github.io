@@ -4,7 +4,7 @@ title: About
 permalink: /about/
 ---
 
-<span class="image left"><img src="{{ "/images/20151127_214320.jpg" | absolute_url }}" alt="" /></span>
+<span class="image left"><img src="{{ "/images/20151127_214320.jpg"  }}" alt="" /></span>
 
 Hello!
 

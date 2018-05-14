@@ -4,7 +4,7 @@ bio:                'Yet Another Geek Blog : dev with fun(ction)'
 description:        "Yet Another Geek Blog : dev with fun(ction)"
 locale:             en_US
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "https://cboudereau.github.io/" # the base hostname & protocol for your site, e.g. http://example.com
+url: "" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: cboudereau
 github_username:  cboudereau
 

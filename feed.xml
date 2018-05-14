@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.7.3">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2018-05-14T18:00:43+02:00</updated><id>/</id><title type="html">Yet Another Geek Blog</title><subtitle>Yet Another Geek Blog : dev with fun(ction)</subtitle><entry><title type="html">Finding your baby name with fsharp</title><link href="/fsharp/data/hack/2018/05/11/finding-your-baby-name-with-fsharp.html" rel="alternate" type="text/html" title="Finding your baby name with fsharp" /><published>2018-05-11T08:23:10+02:00</published><updated>2018-05-11T08:23:10+02:00</updated><id>/fsharp/data/hack/2018/05/11/finding-your-baby-name-with-fsharp</id><content type="html" xml:base="/fsharp/data/hack/2018/05/11/finding-your-baby-name-with-fsharp.html">&lt;p&gt;First of all I am glad to have another child in my familly.&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.7.3">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2018-05-14T18:10:43+02:00</updated><id>/</id><title type="html">Yet Another Geek Blog</title><subtitle>Yet Another Geek Blog : dev with fun(ction)</subtitle><entry><title type="html">Finding your baby name with fsharp</title><link href="/fsharp/data/hack/2018/05/11/finding-your-baby-name-with-fsharp.html" rel="alternate" type="text/html" title="Finding your baby name with fsharp" /><published>2018-05-11T08:23:10+02:00</published><updated>2018-05-11T08:23:10+02:00</updated><id>/fsharp/data/hack/2018/05/11/finding-your-baby-name-with-fsharp</id><content type="html" xml:base="/fsharp/data/hack/2018/05/11/finding-your-baby-name-with-fsharp.html">&lt;p&gt;First of all I am glad to have another child in my familly.&lt;/p&gt;
 
 &lt;p&gt;He is my 2nd boy, so it was really hard for us to find another boy name.
 &lt;!--more--&gt;&lt;/p&gt;
@@ -8,8 +8,9 @@
 &lt;p&gt;How to find the pretty well name for my little boy ?&lt;/p&gt;
 
 &lt;h2 id=&quot;the-problem&quot;&gt;The Problem&lt;/h2&gt;
-&lt;p&gt;I was using this site : https://dataaddict.fr/prenoms/ and I saw one problem : Lack of classification. 
-In spite of that point, the idea is good : to see how and when a name is used with stats.&lt;/p&gt;
+&lt;p&gt;I was using this site : https://dataaddict.fr/prenoms/ and I saw one problem : Lack of classification.&lt;/p&gt;
+
+&lt;p&gt;In spite of that point, the idea is good : to see how and when a name is used with stats.&lt;/p&gt;
 &lt;ul&gt;
   &lt;li&gt;I would like to see names by their properties (long, short, composed, …).&lt;/li&gt;
   &lt;li&gt;And group them phonetically&lt;/li&gt;
@@ -30,7 +31,7 @@ type FirstNameStats = CsvProvider&amp;lt; &quot;nat2016_txt/nat2016.txt&quot;, S
 let stats = FirstNameStats.Load(&quot;nat2016_txt/nat2016.txt&quot;)
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;Now build a function that returns all name for a given gender.&lt;/p&gt;
+&lt;p&gt;Now build a function that returns all name for a given gender by year.&lt;/p&gt;
 
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;module Int32 = 
     let tryInt x = 
@@ -71,19 +72,19 @@ boys |&amp;gt; Seq.take 10 |&amp;gt; Seq.toList
 
 &lt;h2 id=&quot;classify-classify-classify&quot;&gt;Classify, classify, classify&lt;/h2&gt;
 &lt;p&gt;After analysing the data, I was finding my name (Clément) when I see that there was different spelling (accent and other difference).
-To reduce the amount of duplicate phonetic match, I would like to group name by phonetic match.&lt;/p&gt;
+To reduce the amount of duplicate phonetic match, I would like to group name phonetically.&lt;/p&gt;
 
-&lt;p&gt;The main problem with phonetic algorithm was the lowest telerance with cross language spelling variation.&lt;/p&gt;
+&lt;p&gt;The main problem with phonetic algorithm was the lowest tolerance with cross language spelling variation.&lt;/p&gt;
 
-&lt;p&gt;Here is some case where I did not find the right math :&lt;/p&gt;
+&lt;p&gt;Here is some cases where I did not find the right math :&lt;/p&gt;
 &lt;ul&gt;
   &lt;li&gt;“Yolaine” : “Yolène”, “Yolene”&lt;/li&gt;
   &lt;li&gt;“Clément” : “Clement”, “Klement”&lt;/li&gt;
 &lt;/ul&gt;
 
-&lt;p&gt;I try with different french algorithm like Soundex and Phonex and the best one was Phonex (Good balance between redundancy and spelling variation).&lt;/p&gt;
+&lt;p&gt;I try with different french algorithms like Soundex and Phonex and the best one was Phonex (Good balance between redundancy and spelling variation).&lt;/p&gt;
 
-&lt;p&gt;I have patched the Phonex algorithm to match the 2 cases “Yolaine” and “Clement”.&lt;/p&gt;
+&lt;p&gt;I patched the Phonex algorithm to match the 2 cases “Yolaine” and “Clement”.&lt;/p&gt;
 
 &lt;p&gt;You can check the differences &lt;a href=&quot;https://github.com/cboudereau/firstname/commit/a2fee2492820fe59d2df928cd82473f27086fe96#diff-03d56f95fd97ac5769359687562f51e7&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
 
@@ -191,11 +192,11 @@ Phonex.hash &quot;clement&quot; //kl1
 Phonex.hash &quot;clemens&quot; //kl1s
 
 Phonex.hash &quot;yolaine&quot; //iolen
-Phonex.hash &quot;yolène&quot; //iolen
-Phonex.hash &quot;yoléne&quot; //iolen
+Phonex.hash &quot;yolène&quot;  //iolen
+Phonex.hash &quot;yoléne&quot;  //iolen
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;This is not the best implementation (string allocations) but it is ok for our case. 
+&lt;p&gt;This is not the best implementation (due to string allocations) but it is ok for our case. 
 I tried to use FParsec for this case but the performance was not really impressive (may be I was wrong.).
 Here is my attempt if you want to give me a better implementation : https://github.com/cboudereau/firstname/blob/master/phonex.fsx&lt;/p&gt;
 
@@ -211,7 +212,7 @@ Here is my attempt if you want to give me a better implementation : https://gith
 
 &lt;h2 id=&quot;a-quick-test&quot;&gt;A quick test&lt;/h2&gt;
 
-&lt;p&gt;Now that we have the algorithm to hash phonetically names, we can write a function that reduce the amount of names!&lt;/p&gt;
+&lt;p&gt;Now that we have the algorithm to hash phonetically names, we can write a function that reduces the names count!&lt;/p&gt;
 
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;module Snd = 
     let map f (x,y) = x, f y
@@ -246,13 +247,13 @@ val it : FirstName list option =
 &lt;p&gt;Now we have only 7413 names to check.&lt;/p&gt;
 
 &lt;blockquote&gt;
-  &lt;p&gt;A name has around 2 spelling.&lt;/p&gt;
+  &lt;p&gt;A name has around 2 spellings.&lt;/p&gt;
 &lt;/blockquote&gt;
 
 &lt;p&gt;7413 names is still high to check names and with my wife we know what kind of name we don’t want (too long, too short, …)&lt;/p&gt;
 
 &lt;h2 id=&quot;phonetic-categorization&quot;&gt;Phonetic categorization&lt;/h2&gt;
-&lt;p&gt;For the next part, we will use this block of code and introduced each function.
+&lt;p&gt;For the next part, we will use this block of code.
 We can for example control the phonetic length of the name.&lt;/p&gt;
 
 &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;module Phonetic = 
@@ -358,12 +359,13 @@ let av = average result
 
 datas result |&amp;gt; Seq.toList |&amp;gt; graph av
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
 &lt;h2 id=&quot;final-result&quot;&gt;Final Result&lt;/h2&gt;
 &lt;p&gt;&lt;img src=&quot;/images/namestats.png&quot; alt=&quot;Final result&quot; /&gt;&lt;/p&gt;
 
 &lt;p&gt;You can checkout the code &lt;a href=&quot;https://github.com/cboudereau/firstname/blob/master/blog.fsx&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
 
-&lt;p&gt;The name of my little boy is : Baptiste&lt;/p&gt;
+&lt;p&gt;My little boy is named Baptiste&lt;/p&gt;
 
 &lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
 &lt;p&gt;I guess we could analyse the keyword of baby name descriptions from Internet and then categorize them into a graph and navigate inside. 

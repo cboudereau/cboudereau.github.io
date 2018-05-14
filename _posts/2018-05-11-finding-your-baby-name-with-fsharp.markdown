@@ -18,6 +18,7 @@ How to find the pretty well name for my little boy ?
 
 ## The Problem
 I was using this site : https://dataaddict.fr/prenoms/ and I saw one problem : Lack of classification. 
+
 In spite of that point, the idea is good : to see how and when a name is used with stats.
 - I would like to see names by their properties (long, short, composed, ...).
 - And group them phonetically
@@ -38,7 +39,7 @@ type FirstNameStats = CsvProvider< "nat2016_txt/nat2016.txt", Separators = "\t",
 let stats = FirstNameStats.Load("nat2016_txt/nat2016.txt")
 ```
 
-Now build a function that returns all name for a given gender.
+Now build a function that returns all name for a given gender by year.
 
 ```
 module Int32 = 
@@ -80,17 +81,17 @@ Now that we have names in memory, how can I classify information and search in i
 
 ## Classify, classify, classify
 After analysing the data, I was finding my name (Clément) when I see that there was different spelling (accent and other difference).
-To reduce the amount of duplicate phonetic match, I would like to group name by phonetic match.
+To reduce the amount of duplicate phonetic match, I would like to group name phonetically.
 
-The main problem with phonetic algorithm was the lowest telerance with cross language spelling variation.
+The main problem with phonetic algorithm was the lowest tolerance with cross language spelling variation.
 
-Here is some case where I did not find the right math : 
+Here is some cases where I did not find the right math : 
 - "Yolaine" : "Yolène", "Yolene"
 - "Clément" : "Clement", "Klement"
 
-I try with different french algorithm like Soundex and Phonex and the best one was Phonex (Good balance between redundancy and spelling variation).
+I try with different french algorithms like Soundex and Phonex and the best one was Phonex (Good balance between redundancy and spelling variation).
 
-I have patched the Phonex algorithm to match the 2 cases "Yolaine" and "Clement".
+I patched the Phonex algorithm to match the 2 cases "Yolaine" and "Clement".
 
 You can check the differences [here](https://github.com/cboudereau/firstname/commit/a2fee2492820fe59d2df928cd82473f27086fe96#diff-03d56f95fd97ac5769359687562f51e7).
 
@@ -199,11 +200,11 @@ Phonex.hash "clement" //kl1
 Phonex.hash "clemens" //kl1s
 
 Phonex.hash "yolaine" //iolen
-Phonex.hash "yolène" //iolen
-Phonex.hash "yoléne" //iolen
+Phonex.hash "yolène"  //iolen
+Phonex.hash "yoléne"  //iolen
 ```
 
-This is not the best implementation (string allocations) but it is ok for our case. 
+This is not the best implementation (due to string allocations) but it is ok for our case. 
 I tried to use FParsec for this case but the performance was not really impressive (may be I was wrong.).
 Here is my attempt if you want to give me a better implementation : https://github.com/cboudereau/firstname/blob/master/phonex.fsx
 
@@ -217,7 +218,7 @@ Sounds good :)
 
 ## A quick test
 
-Now that we have the algorithm to hash phonetically names, we can write a function that reduce the amount of names!
+Now that we have the algorithm to hash phonetically names, we can write a function that reduces the names count!
 
 ```
 module Snd = 
@@ -252,12 +253,12 @@ Hey not bad !
 
 Now we have only 7413 names to check.
 
-> A name has around 2 spelling.
+> A name has around 2 spellings.
 
 7413 names is still high to check names and with my wife we know what kind of name we don't want (too long, too short, ...)
 
 ## Phonetic categorization
-For the next part, we will use this block of code and introduced each function.
+For the next part, we will use this block of code.
 We can for example control the phonetic length of the name.
 
 ```
@@ -370,12 +371,13 @@ let av = average result
 
 datas result |> Seq.toList |> graph av
 ```
+
 ## Final Result
 ![Final result](/images/namestats.png)
 
 You can checkout the code [here](https://github.com/cboudereau/firstname/blob/master/blog.fsx).
 
-The name of my little boy is : Baptiste
+My little boy is named Baptiste
 
 ## Conclusion
 I guess we could analyse the keyword of baby name descriptions from Internet and then categorize them into a graph and navigate inside. 
